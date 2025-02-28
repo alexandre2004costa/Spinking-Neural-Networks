@@ -1,0 +1,5 @@
+python3 -m venv name
+source name/bin/activate
+pip install package
+
+https://videoconf-colibri.zoom.us/my/rpcruz

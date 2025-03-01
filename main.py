@@ -1,4 +1,6 @@
 import numpy as np
+import random as ran
+import neat
 import matplotlib.pyplot as plt
 
 class IzhikevichNeuron: 
@@ -23,41 +25,55 @@ class IzhikevichNeuron:
         self.v += dv * dt
         self.u += du * dt
 
+    def receive_spike(self, weight):
+        self.potencial += self.threshold * weight
+
+    def background_noise(self, noise = 0.1):
+        self.potencial += noise
+
+    def spike(self):
+        return self.v >= self.vt
+
+class SNN:
+    def __init__(self, number_neuron):
+        self.connection_matrix = np.zeros((number_neuron, number_neuron))
+        self.neurons = [IzhikevichNeuron(65, 0.2 * -65, 30, 0.02, 0.2, -50, 2) for _ in range(number_neuron)]
+        
+        # Paper config, 1 final node connected to 4 initial ones (inputs)
+        self.connection_matrix[0][4] = ran.random()
+        self.connection_matrix[1][4] = ran.random()
+        self.connection_matrix[2][4] = ran.random()
+        self.connection_matrix[3][4] = ran.random()
+
+    def update_weights(self, neuron_init, neuron_dest, new_weight):
+        self.connection_matrix[neuron_init][neuron_dest] = new_weight
+
+    def propagate_spikes(self):
+        for i, neuron in enumerate(self.neurons):
+            for j in range(len(self.neurons)):
+                if self.connection_matrix[i][j] > 0:  # In case of connection
+                    self.neurons[j].receive_spike(self.connection_matrix[i][j])
+            
+            neuron.step()
+            neuron.background_noise()
+        
+def eval_genome(genome, config):
+    net = neat.nn.FeedForwardNetwork.create(genome, config)
+    snn = SNN(5)  # 5 neurônios na SNN
+    
+    for i in range(100):  # Simulação
+        inputs = np.random.rand(4)  # Inputs do CartPole
+        weights = net.activate(inputs)  # NEAT gera os pesos sinápticos
+        snn.update_weights(0, 4, weights[0])  # Atualiza conexão
+        snn.propagate_spikes()
+    
+    return some_fitness_value  # Retorna a fitness
+
 if __name__ == '__main__':
 
-    neuron_types = {
-    'Regular Spiking': {'a': 0.02, 'b': 0.2, 'c': -65, 'd': 8},
-    'Fast Spiking': {'a': 0.1, 'b': 0.2, 'c': -65, 'd': 2},
-    'Bursting': {'a': 0.02, 'b': 0.2, 'c': -50, 'd': 2}
-}
-
-time = 1000  
-dt = 1.0  
-current_values = np.arange(0, 201, 20) 
-
-firing_rates = {key: [] for key in neuron_types.keys()}
-
-for neuron_name, params in neuron_types.items():
-    for I in current_values:
-        neuron = IzhikevichNeuron(potencial=-65, recovery=params['b'] * -65, threshold=30, a=params['a'], b=params['b'], c=params['c'], d=params['d'])
-        spikes = 0
-
-        for t in range(int(time / dt)):
-            neuron.step(I, dt)
-
-            if neuron.v >= neuron.vt:
-                spikes += 1
-
-        firing_rate = spikes / (time / 1000) 
-        firing_rates[neuron_name].append(firing_rate)
-
-plt.figure(figsize=(8, 6))
-for neuron_name, rates in firing_rates.items():
-    plt.plot(current_values, rates, label=neuron_name, marker='o')
-
-plt.xlabel('Injected Current (nA)')
-plt.ylabel('Firing Rate (Hz)')
-plt.title('Firing Rate vs. Injected Current for Different Neuron Types')
-plt.legend()
-plt.grid(True)
-plt.show()
+    config_path = "config-feedforward"
+    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                        neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                        config_path)
+    pop = neat.Population(config)
+    pop.run(eval_genome, 100)

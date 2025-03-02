@@ -1,7 +1,9 @@
-import numpy as np
+
 import random as ran
 import neat
 import matplotlib.pyplot as plt
+from cartPole import *
+
 
 class IzhikevichNeuron: 
     def __init__(self, potencial, recovery, threshold, a=0.02, b=0.2, c=-65, d=2):
@@ -12,68 +14,128 @@ class IzhikevichNeuron:
         self.v = potencial
         self.u = recovery
         self.vt = threshold # 30 mv
+        self.spike_count = 0
+        self.sypnatic_input = 0
+        self.background_noise = 0.1
 
-    def step(self, injected_sypnatic, dt=1.0): #dt -> derivada do tempo, assumir 1 seg 
-
+    def step(self, dt=0.1): #dt -> derivada do tempo, assumir 1 seg 
+        spike = False
         if self.v >= self.vt:  # spike reset
             self.v = self.c
             self.u += self.d
+            self.spike_count += 1
+            spike = True
 
-        dv = 0.04 * self.v ** 2 + 5 * self.v + 140 - self.u + injected_sypnatic
+        dv = 0.04 * self.v ** 2 + 5 * self.v + 140 - self.u + self.sypnatic_input + self.background_noise
         du = self.a * (self.b * self.v - self.u)
-
+        self.sypnatic_input = 0
+        #print(f' dv : {dv}, dv * dt {dv * dt}, v : {self.v}')
         self.v += dv * dt
         self.u += du * dt
 
+        return spike
+
     def receive_spike(self, weight):
-        self.potencial += self.threshold * weight
-
-    def background_noise(self, noise = 0.1):
-        self.potencial += noise
-
-    def spike(self):
-        return self.v >= self.vt
+        self.v += self.vt * weight
 
 class SNN:
     def __init__(self, number_neuron):
         self.connection_matrix = np.zeros((number_neuron, number_neuron))
-        self.neurons = [IzhikevichNeuron(65, 0.2 * -65, 30, 0.02, 0.2, -50, 2) for _ in range(number_neuron)]
-        
+        self.neurons = [IzhikevichNeuron(-60, 0.2 * -65, 30, 0.02, 0.2, -50, 2) for _ in range(number_neuron)]
+        self.state = np.array([0, 0, 0.05, 0]) # initial cart state
         # Paper config, 1 final node connected to 4 initial ones (inputs)
-        self.connection_matrix[0][4] = ran.random()
-        self.connection_matrix[1][4] = ran.random()
-        self.connection_matrix[2][4] = ran.random()
-        self.connection_matrix[3][4] = ran.random()
+        self.connection_matrix[0][4] = 30
+        self.connection_matrix[1][4] = 30
+        self.connection_matrix[2][4] = 30
+        self.connection_matrix[3][4] = 30
 
     def update_weights(self, neuron_init, neuron_dest, new_weight):
         self.connection_matrix[neuron_init][neuron_dest] = new_weight
+    
+    def encode_input(self, state, min_vals, max_vals, I_min=0.1, I_max=5.0):
+        norm_state = (state - min_vals) / (max_vals - min_vals)
+        I_values = I_min + norm_state * (I_max - I_min)
+        return I_values
+    
+    def generate_spike_train(self, num_spikes, time_window):
+        spike_train = np.zeros(time_window)
+        spike_times = np.random.choice(time_window, num_spikes, replace=False)
+        spike_train[spike_times] = 1
+        return spike_train
+    
+    def propagate_spikes(self, injected_currents, time_window=0.1, dt=0.0001):
+        num_steps = int(time_window / dt)
+        for neuron in self.neurons:
+            neuron.spike_count = 0  
 
-    def propagate_spikes(self):
-        for i, neuron in enumerate(self.neurons):
-            for j in range(len(self.neurons)):
-                if self.connection_matrix[i][j] > 0:  # In case of connection
-                    self.neurons[j].receive_spike(self.connection_matrix[i][j])
-            
-            neuron.step()
-            neuron.background_noise()
+        spike_input_count = 0
+        for t in range(1, num_steps+1):
+            for i, neuron in enumerate(self.neurons):
+                # Spike input neurons
+                if i < 4 and t % int(injected_currents[i] * 10) == 0:
+                    spike_input_count += 1
+                    neuron.sypnatic_input += (neuron.vt - neuron.v)
+
+                # Propagate spikes
+                spike = neuron.step()
+                if spike: 
+                    print(f'Spike {i} fired on {t}')
+                    for j in range(len(self.neurons)):
+                        if self.connection_matrix[i][j] > 0:
+                            self.neurons[j].receive_spike(self.connection_matrix[i][j]) 
         
+        print(f'Input spikes : {spike_input_count}')
+        return self.neurons[-1].spike_count  # only output spike count
+    
+    def step(self, action):
+        done = False
+        reward = 0
+        self.state = simulate_cartpole(action, self.state)
+        x, _, theta, _ = self.state
+        if abs(x) > position_limit or abs(theta) > angle_limit:
+            done = True
+        reward += (math.cos(theta) + 1)
+        return reward, done
+       
+def build_snn_from_genome(genome):
+    snn = SNN(len(genome.nodes))
+    for connection in genome.connections.values():
+        if connection.enabled:
+            snn.update_weights(connection.key[0], connection.key[1], connection.weight)
+    return snn
+
 def eval_genome(genome, config):
-    net = neat.nn.FeedForwardNetwork.create(genome, config)
-    snn = SNN(5)  # 5 neurônios na SNN
-    
-    for i in range(100):  # Simulação
-        inputs = np.random.rand(4)  # Inputs do CartPole
-        weights = net.activate(inputs)  # NEAT gera os pesos sinápticos
-        snn.update_weights(0, 4, weights[0])  # Atualiza conexão
-        snn.propagate_spikes()
-    
-    return some_fitness_value  # Retorna a fitness
+    snn = build_snn_from_genome(genome)  # Criar a rede SNN a partir do genoma
+    fitness = 0
+    done = False
+    min_vals = np.array([-position_limit, -2.0, -angle_limit, -2.0])
+    max_vals = np.array([ position_limit,  2.0,  angle_limit,  2.0])
+
+    while not done:
+        injected_currents = snn.encode_input(snn.state, min_vals, max_vals)
+        output_spikes = snn.propagate_spikes(injected_currents)
+        action = 1 if output_spikes > 152 / 2 else 0 # 152 is the number of input spikes , output decode
+        reward, done= snn.step(action)
+        fitness += reward
+
+    return fitness
+
+
+def test_cartpole_snn():
+    snn = SNN(5)  # Criar rede com 5 neurônios (4 inputs + 1 output)
+
+    # Simular um estado do pêndulo
+    min_vals = np.array([-position_limit, -2.0, -angle_limit, -2.0])
+    max_vals = np.array([position_limit, 2.0, angle_limit, 2.0])
+
+    injected_currents = snn.encode_input(snn.state, min_vals, max_vals)
+    print(injected_currents)
+    output_spikes = snn.propagate_spikes(injected_currents)
+    print(f"Teste 3: O número de spikes do output foi {output_spikes}")
+
+
 
 if __name__ == '__main__':
-
-    config_path = "config-feedforward"
-    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                        neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                        config_path)
-    pop = neat.Population(config)
-    pop.run(eval_genome, 100)
+    #test_single_neuron_spiking()   
+    #test_spike_propagation()
+    test_cartpole_snn()

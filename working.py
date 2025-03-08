@@ -2,6 +2,8 @@ import numpy as np
 import neat
 import math
 import pygame
+from iznn import *
+
 
 gravity = 9.8
 cart_force = 10.0
@@ -73,11 +75,12 @@ def eval_genomes(genomes, config):
     total_fitness = 0
     max_fitness = 0
     for genome_id, genome in genomes:
-        net = neat.nn.FeedForwardNetwork.create(genome, config)
+        net = IZNN.create(genome, config)
         fitness = 0
         state = np.array([0, 0, 0.05, 0])
         for _ in range(int(max_time / time_step)):
-            action = np.argmax(net.activate(state))
+            outputs = net.activate(state)  # Ativa a rede com o estado atual
+            action = np.argmax(outputs)  # Obtém a ação com maior ativação
             state = simulate_cartpole(action, state)
             x, _, theta, _ = state
             if abs(x) > position_limit or abs(theta) > angle_limit:
@@ -89,8 +92,14 @@ def eval_genomes(genomes, config):
     avg_fitness = total_fitness / len(genomes)
     draw_cartpole(np.array([0, 0, 0.05, 0]), generation_number, avg_fitness, max_fitness)
 
+def l2norm(x):
+    return (sum(i**2 for i in x))**0.5
+
 def run_neat(config_file):
-    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_file)
+    config = neat.Config(IZGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_file)
+    config.genome_config.aggregation_function_defs.add('my_l2norm_function', l2norm)
+
+
     population = neat.Population(config)
     population.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
@@ -101,7 +110,8 @@ def run_neat(config_file):
 
     # Display the best genome
     state = np.array([0, 0, 0.05, 0])
-    net = neat.nn.FeedForwardNetwork.create(winner, config)
+    net = IZNN.create(winner, config)
+
     running = True
     while running:
         for event in pygame.event.get():

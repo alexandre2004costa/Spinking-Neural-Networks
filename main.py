@@ -18,7 +18,7 @@ class IzhikevichNeuron:
         self.sypnatic_input = 0
         self.background_noise = 0.1
 
-    def step(self, dt=0.1): #dt -> derivada do tempo, assumir 1 seg 
+    def step(self, dt=0.1): #dt -> derivada do tempo
         spike = False
         if self.v >= self.vt:  # spike reset
             self.v = self.c
@@ -44,6 +44,8 @@ class SNN:
         self.neurons = [IzhikevichNeuron(-60, 0.2 * -65, 30, 0.02, 0.2, -50, 2) for _ in range(number_neuron)]
         self.state = np.array([0, 0, 0.05, 0]) # initial cart state
         # Paper config, 1 final node connected to 4 initial ones (inputs)
+
+        #Initial weights
         self.connection_matrix[0][4] = 30
         self.connection_matrix[1][4] = 30
         self.connection_matrix[2][4] = 30
@@ -64,7 +66,7 @@ class SNN:
         return spike_train
     
     def propagate_spikes(self, injected_currents, time_window=0.1, dt=0.0001):
-        num_steps = int(time_window / dt)
+        num_steps = int(time_window / dt) # 1000 steps
         for neuron in self.neurons:
             neuron.spike_count = 0  
 
@@ -72,7 +74,7 @@ class SNN:
         for t in range(1, num_steps+1):
             for i, neuron in enumerate(self.neurons):
                 # Spike input neurons
-                if i < 4 and t % int(injected_currents[i] * 10) == 0:
+                if i < 4 and t % int(injected_currents[i] * 10) == 0: # change to probability
                     spike_input_count += 1
                     neuron.sypnatic_input += (neuron.vt - neuron.v)
 
@@ -105,37 +107,53 @@ def build_snn_from_genome(genome):
     return snn
 
 def eval_genome(genome, config):
-    snn = build_snn_from_genome(genome)  # Criar a rede SNN a partir do genoma
+    #snn = build_snn_from_genome(genome) 
+    snn = SNN(5)
     fitness = 0
     done = False
     min_vals = np.array([-position_limit, -2.0, -angle_limit, -2.0])
     max_vals = np.array([ position_limit,  2.0,  angle_limit,  2.0])
 
+    moves = 0
     while not done:
+        moves += 1
         injected_currents = snn.encode_input(snn.state, min_vals, max_vals)
+        print(injected_currents)
         output_spikes = snn.propagate_spikes(injected_currents)
+        print(output_spikes)
         action = 1 if output_spikes > 152 / 2 else 0 # 152 is the number of input spikes , output decode
         reward, done= snn.step(action)
+        print((reward, done))
         fitness += reward
+        draw_cartpole(snn.state, 0, 0, 0, "oi")
 
+    print(f'Moves : {moves}')
     return fitness
 
+def eval_genomes(genomes, config):
+    for genome_id, genome in genomes:
+        genome.fitness = eval_genome(genome, config)
+
+def run_neat(config_file):
+    config = neat.Config(neat.iznn.IZGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         config_file)
+
+    pop = neat.Population(config)
+    pop.add_reporter(neat.StdOutReporter(True))
+
+    winner = pop.run(eval_genome, 100)  
+    print("Best solution found!", winner)
 
 def test_cartpole_snn():
-    snn = SNN(5)  # Criar rede com 5 neurônios (4 inputs + 1 output)
-
-    # Simular um estado do pêndulo
-    min_vals = np.array([-position_limit, -2.0, -angle_limit, -2.0])
-    max_vals = np.array([position_limit, 2.0, angle_limit, 2.0])
-
-    injected_currents = snn.encode_input(snn.state, min_vals, max_vals)
-    print(injected_currents)
-    output_spikes = snn.propagate_spikes(injected_currents)
-    print(f"Teste 3: O número de spikes do output foi {output_spikes}")
+    i = 0
+    while(i < 100):
+        i+=1
+        eval_genome("oi","oi")
 
 
 
 if __name__ == '__main__':
-    #test_single_neuron_spiking()   
-    #test_spike_propagation()
-    test_cartpole_snn()
+    #test_cartpole_snn()
+    config_path = "config-feedforward.txt"
+    run_neat(config_path)

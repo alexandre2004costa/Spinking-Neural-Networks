@@ -15,6 +15,7 @@ def eval_genomes(genomes, config):
         fitness = 0
         state = np.array([0, 0, 0.05, 0])
         for _ in range(int(max_time / time_step)):
+            print(state)
             action = np.argmax(net.activate(state))
             state = simulate_cartpole(action, state)
             x, _, theta, _ = state
@@ -45,10 +46,9 @@ def run_neat(config_file):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+        print(state)
         outputs = net.activate(state) 
-        print(outputs)
         action = np.argmax(outputs)
-        print(action)
         state = simulate_cartpole(action, state)
         x, _, theta, _ = state
 

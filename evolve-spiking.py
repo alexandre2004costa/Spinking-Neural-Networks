@@ -9,23 +9,29 @@ from cartPole import *  # Importa o teu CartPole SNN
 # Parâmetros da simulação
 time_limit = 500  # Número máximo de passos que o agente pode sobreviver
 generation_number = 0
+dt = 0.1
+maxFitness = 0
 
 def simulate(genome, config):
     """Simula um episódio do CartPole usando um genoma."""
+    global maxFitness
     net = neat.iznn.IZNN.create(genome, config)  # Cria a rede de Izhikevich
     state = np.array([0, 0, 0.05, 0])
-    dt = net.get_time_step_msec()
     total_reward = 0
     
     for t in range(time_limit):
         net.set_inputs(state)  # Define os inputs da rede
         output = net.advance(dt)  # Avança a rede por um timestep
         action = 1 if output[0] > output[1] else 0  # Decide ação baseado nos outputs
+        #print(output)
+        #print(action)
         state = simulate_cartpole(action, state)
         x, _, theta, _ = state
         if abs(x) > position_limit or abs(theta) > angle_limit:
             break
         total_reward += (math.cos(theta) + 1)
+        maxFitness = max(maxFitness, total_reward)
+        draw_cartpole(state, generation_number, total_reward, maxFitness, "message")
     
     return total_reward
 
@@ -66,7 +72,6 @@ def run(config_path):
                 running = False
 
         net.set_inputs(state)  # Define os inputs da rede
-        dt = net.get_time_step_msec()
         output = net.advance(dt)  # Avança a rede por um timestep
         action = 1 if output[0] > output[1] else 0  # Decide ação baseado nos outputs
         state = simulate_cartpole(action, state)

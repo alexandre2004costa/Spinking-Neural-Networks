@@ -50,7 +50,7 @@ class IZNodeGene(BaseGene):
 
     def __init__(self, key):
         super().__init__(key)
-        self.aggregation = "sum"  # Pode ser "max", "min", "mean", etc.
+        #self.aggregation = "min"  
 
 class IZGenome(DefaultGenome):
     @classmethod
@@ -116,6 +116,7 @@ class IZNeuron(object):
             self.v += 0.5 * dt_msec * (0.04 * self.v ** 2 + 5 * self.v + 140 - self.u + self.current)
             self.u += dt_msec * self.a * (self.b * self.v - self.u)
         except OverflowError:
+            print("OVERFLOW!!!!!!!!!!!!!!!!!!!!")
             # Reset without producing a spike.
             self.v = self.c
             self.u = self.b * self.v
@@ -165,7 +166,7 @@ class IZNN(object):
         # pylint: disable=no-self-use
         # TODO: Investigate performance or numerical stability issues that may
         # result from using this hard-coded time step.
-        return 0.05
+        return 0.1
 
 
     def advance(self, dt_msec):

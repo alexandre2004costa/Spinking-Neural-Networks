@@ -13,8 +13,6 @@ bias_mutate_power       = 5.0
 bias_mutate_rate        = 0.7
 bias_replace_rate       = 0.1
 
-aggregation_function = sum
-
 compatibility_disjoint_coefficient = 1.0
 compatibility_weight_coefficient   = 0.5
 

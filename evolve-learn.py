@@ -10,13 +10,11 @@ from multiprocessing import cpu_count
 
 
 # Parâmetros da simulação
-time_limit = 100  # Número máximo de passos que o agente pode sobreviver
 generation_number = 0
-dt = 0.01
+dt = 0.02
 maxFitness = 0
 
-min_vals = np.array([-2.4, -10.0, -0.21, -10.0])
-max_vals = np.array([2.4, 10.0, 0.21, 10.0])
+
 
 def monitor_spikes(net, steps=10):
     """Monitor spike activity in the network for a few steps."""
@@ -42,44 +40,30 @@ def monitor_spikes(net, steps=10):
         #print(i.inputs)
 
 def encode_input(state, min_vals, max_vals, I_min=70.0, I_max=100.0):
-    # Increase I_min from 50.0 to 70.0 to generate stronger input signals
     norm_state = (state - min_vals) / (max_vals - min_vals)
     I_values = I_min + norm_state * (I_max - I_min)
     return I_values
 
 def simulate(genome, config):
     """Simula um episódio do CartPole usando um genoma."""
-    global maxFitness
-    net = neat.iznn.IZNN.create(genome, config)  # Cria a rede de Izhikevich
-    monitor_spikes(net)
+    net = neat.iznn.IZNN.create(genome, config)  
+    #monitor_spikes(net)
     state = np.array([0, 0, 0.05, 0])
     total_reward = 0
-    
-    #print(f"Network has {len(net.neurons)} neurons")
-    #print(f"Input neurons: {net.input_neurons}")
-    #print(f"Output neurons: {net.output_neurons}")
 
-    for t in range(time_limit):
+    while True:
         input_values = encode_input(state, min_vals, max_vals)
-        #print(f"Input values: {input_values}")
         net.set_inputs(input_values)
-        
-        # Before advancing, check neuron states
-        #print(f"Before advance, output neurons: {[net.neurons[i].v for i in net.output_neurons]}")
-        
         output = net.advance(dt)
-        #print(int(output[0]))
-        #print(f"Time {t}: Output neuron fired: {net.neurons[net.output_neurons[0]].has_fired}")
-        # After advancing, check neuron states
-       # print(f"After advance, output neurons: {[net.neurons[i].v for i in net.output_neurons]}")
-        #print(f"Output: {output}")
         state = simulate_cartpole(int(output[0]), state)
-        #print(state)
         x, _, theta, _ = state
         if abs(x) > position_limit or abs(theta) > angle_limit:
             break
-        total_reward += (math.cos(theta) + 1)
-        maxFitness = max(maxFitness, total_reward)
+        #total_reward += (math.cos(theta) + 1)
+        total_reward += 1
+        if total_reward >= 100000:
+            break
+        #maxFitness = max(maxFitness, total_reward)
         #draw_cartpole(state, generation_number, total_reward, maxFitness, "message")
     
     return total_reward
@@ -135,19 +119,41 @@ def run_neat_with_config(config_values):
     stats = neat.StatisticsReporter()
     pop.add_reporter(stats)
 
-    #pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
-    winner = pop.run(eval_genomes, 10)
+    pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
+    winner = pop.run(pe.evaluate, 100)
     print('\nMelhor genoma:\n{!s}'.format(winner))
+
+    pygame.init()
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    clock = pygame.time.Clock()
+    state = np.array([0, 0, 0.05, 0])
+    net = neat.iznn.IZNN.create(winner, config)
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        input_values = encode_input(state, min_vals, max_vals)
+        net.set_inputs(input_values)
+        output = net.advance(dt)
+        state = simulate_cartpole(int(output[0]), state)
+        x, _, theta, _ = state
+        if abs(x) > position_limit or abs(theta) > angle_limit:
+            message = "Failed! Restarting..."
+            state = np.array([0, 0, 0.05, 0])
+
+        draw_cartpole(screen, state, generation_number, 0, 0, "!!!")
+
+        clock.tick(50)
     return winner.fitness
 
 def random_search(n_trials=10):
-    global dt
     best_config = None
     best_fitness = float('-inf')
+
     for _ in range(n_trials):
         config_values = random_config()
         fitness = run_neat_with_config(config_values)
-        #dt += 0.01
         if fitness > best_fitness:
             best_fitness = fitness
             best_config = config_values
@@ -159,4 +165,4 @@ def random_search(n_trials=10):
 
     
 if __name__ == '__main__':
-    best_config = random_search(n_trials=5)
+    best_config = random_search(1)

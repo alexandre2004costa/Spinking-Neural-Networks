@@ -14,19 +14,21 @@ def eval_genomes(genomes, config):
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         fitness = 0
         state = np.array([0, 0, 0.05, 0])
-        for _ in range(int(max_time / time_step)):
-            print(state)
+        while True:
             action = np.argmax(net.activate(state))
             state = simulate_cartpole(action, state)
             x, _, theta, _ = state
             if abs(x) > position_limit or abs(theta) > angle_limit:
                 break
-            fitness += (math.cos(theta) + 1)
+            #fitness += (math.cos(theta) + 1)
+            fitness += 1
+            if fitness >= 100000:
+                break
         genome.fitness = fitness
         total_fitness += fitness
         max_fitness = max(max_fitness, fitness)
     avg_fitness = total_fitness / len(genomes)
-    draw_cartpole(np.array([0, 0, 0.05, 0]), generation_number, avg_fitness, max_fitness)
+    #draw_cartpole(np.array([0, 0, 0.05, 0]), generation_number, avg_fitness, max_fitness)
 
 def run_neat(config_file):
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_file)
@@ -42,11 +44,14 @@ def run_neat(config_file):
     state = np.array([0, 0, 0.05, 0])
     net = neat.nn.FeedForwardNetwork.create(winner, config)
     running = True
+    pygame.init()
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    clock = pygame.time.Clock()
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        print(state)
         outputs = net.activate(state) 
         action = np.argmax(outputs)
         state = simulate_cartpole(action, state)
@@ -57,7 +62,7 @@ def run_neat(config_file):
             message = "Failed! Restarting..."
             state = np.array([0, 0, 0.05, 0])
 
-        draw_cartpole(state, generation_number, 0, 0, message)
+        draw_cartpole(screen, state, generation_number, 0, 0, message)
 
         clock.tick(50)
     pygame.quit()

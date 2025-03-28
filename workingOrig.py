@@ -20,8 +20,8 @@ def eval_genomes(genomes, config):
             x, _, theta, _ = state
             if abs(x) > position_limit or abs(theta) > angle_limit:
                 break
-            #fitness += (math.cos(theta) + 1)
-            fitness += 1
+            fitness += (math.cos(theta) + 1)
+            #fitness += 1
             if fitness >= 100000:
                 break
         genome.fitness = fitness

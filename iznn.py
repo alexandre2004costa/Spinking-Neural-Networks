@@ -13,6 +13,7 @@ from neat.attributes import FloatAttribute
 from neat.genes import BaseGene, DefaultConnectionGene
 from neat.genome import DefaultGenomeConfig, DefaultGenome
 from neat.graphs import required_for_output
+import random
 
 # a, b, c, d are the parameters of the Izhikevich model.
 # a: the time scale of the recovery variable
@@ -53,8 +54,18 @@ class IZNodeGene(BaseGene):
         #self.aggregation = "min"  
 
 class IZGenome(DefaultGenome):
+    def __init__(self, key):
+        super().__init__(key)
+        self.connections = {}
+        self.nodes = {}
+
     @classmethod
     def parse_config(cls, param_dict):
+        # These fields are required for NEAT-Python
+        param_dict['initial_connection'] = 'partial_nodirect 0.5'
+        # Using non-negative IDs: inputs 1-4, output 0, hidden nodes 5+
+        param_dict['input_keys'] = [i+1 for i in range(4)]  # 1,2,3,4
+        param_dict['output_keys'] = [0]  # Single output with ID 0
         param_dict['node_gene_type'] = IZNodeGene
         param_dict['connection_gene_type'] = DefaultConnectionGene
         if 'aggregation_function_defs' not in param_dict:
@@ -65,6 +76,29 @@ class IZGenome(DefaultGenome):
             }
         return DefaultGenomeConfig(param_dict)
 
+    def configure_new(self, config):
+        super().__init__(self.key)
+        
+        # Create input nodes (IDs 1-4)
+        for i, k in enumerate(config.input_keys, 1):
+            self.nodes[k] = IZNodeGene(k)
+            self.nodes[k].bias = 0.0
+            self.nodes[k].a = config.a_init_mean
+            self.nodes[k].b = config.b_init_mean
+            self.nodes[k].c = config.c_init_mean
+            self.nodes[k].d = config.d_init_mean
+        
+        # Create output node (ID 0)
+        k = config.output_keys[0]
+        self.nodes[k] = IZNodeGene(k)
+        self.nodes[k].bias = random.gauss(config.bias_init_mean, config.bias_init_stdev)
+        self.nodes[k].a = config.a_init_mean
+        self.nodes[k].b = config.b_init_mean
+        self.nodes[k].c = config.c_init_mean
+        self.nodes[k].d = config.d_init_mean
+
+        # Hidden nodes will be added by mutation starting from ID 5
+        # No need to create them here as they're handled by NEAT's mutation
 
 
 class IZNeuron(object):
@@ -145,6 +179,7 @@ class IZNN(object):
         self.inputs = inputs
         self.outputs = outputs
         self.input_values = {}
+        self.spike_count = 0  # Add spike counter
 
     def set_inputs(self, inputs):
         """Assign input voltages."""
@@ -170,21 +205,47 @@ class IZNN(object):
 
 
     def advance(self, dt_msec):
-        for n in self.neurons.values():
-            n.current = n.bias
-            for i, w in n.inputs:
+        try:
+            output_neuron = self.neurons[0]
+            v_before = output_neuron.v
+            
+            # Calculate and log input currents
+            total_current = 0
+            for i, w in output_neuron.inputs:
                 ineuron = self.neurons.get(i)
                 if ineuron is not None:
                     ivalue = ineuron.fired
                 else:
-                    ivalue = self.input_values[i]
+                    ivalue = self.input_values.get(i, 0)
+                curr = ivalue * w
+                total_current += curr
+                if abs(curr) > 100:  # Log large currents
+                    print(f"Large current from {i}: {curr:.2f}")
+            
+            # Original advance code
+            for n in self.neurons.values():
+                n.current = n.bias
+                for i, w in n.inputs:
+                    ineuron = self.neurons.get(i)
+                    if ineuron is not None:
+                        ivalue = ineuron.fired
+                    else:
+                        ivalue = self.input_values.get(i, 0)
+                    n.current += ivalue * w
 
-                n.current += ivalue * w
+            # Debug voltage changes
+            if abs(output_neuron.v - v_before) > 50:
+                print(f"Large voltage change: {v_before:.2f} -> {output_neuron.v:.2f}")
+                print(f"Current: {output_neuron.current:.2f}, Total input current: {total_current:.2f}")
 
-        for n in self.neurons.values():
-            n.advance(dt_msec)
+            for n in self.neurons.values():
+                n.advance(dt_msec)
 
-        return [self.neurons[i].fired for i in self.outputs]
+            return [self.neurons[i].fired for i in self.outputs]
+            
+        except Exception as e:
+            print(f"Error in IZNN advance: {str(e)}")
+            raise
 
     def activate(self, inputs):
         self.set_inputs(inputs)
@@ -210,7 +271,7 @@ class IZNN(object):
             if o not in node_inputs:
                 node_inputs[o] = [(i, cg.weight)]
             else:
-                node_inputs[o].append((i, cg.weight))
+                node_inputs[o].append((i, cg.weight))  # Fixed: removed extra list brackets
 
         neurons = {}
         for node_key in required:

@@ -18,6 +18,15 @@ activation_default = sigmoid
 activation_mutate_rate = 0.1
 activation_options = sigmoid
 
+a_min = 0.01
+a_max = 0.1
+b_min = 0.1
+b_max = 0.5
+c_min = -70
+c_max = -50
+d_min = 5
+d_max = 15
+
 aggregation_default = sum
 aggregation_mutate_rate = 0.0
 aggregation_options = sum

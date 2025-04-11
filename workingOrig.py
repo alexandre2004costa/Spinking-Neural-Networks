@@ -10,7 +10,7 @@ def eval_genomes(genomes, config):
     generation_number += 1
     total_fitness = 0
     max_fitness = 0
-    for genome_id, genome in genomes:
+    for _, genome in genomes:
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         fitness = 0
         state = np.array([0, 0, 0.05, 0])

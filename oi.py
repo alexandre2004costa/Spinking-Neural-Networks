@@ -7,8 +7,7 @@ import numpy as np
 from cartPole import *
 import time
 from multiprocessing import cpu_count
-
-
+import optuna
 
 def encode_input(state, min_vals, max_vals, I_min=70.0, I_max=100.0):
     norm_state = (state - min_vals) / (max_vals - min_vals)
@@ -26,20 +25,21 @@ def simulate(I_min, I_diff, genome, config):
     while True:
         input_values = encode_input(state, min_vals, max_vals, I_min, I_min + I_diff)
         net.set_inputs(input_values)
-        output = net.advance(0.02)
+        output = net.advance(0.02) 
         state = simulate_cartpole(int(output[0]), state)
         x, _, theta, _ = state
         if abs(x) > position_limit or abs(theta) > angle_limit:
             break
         
         total_reward += (math.cos(theta) + 1)
+        
         steps_balanced += 1
         
         if steps_balanced >= 100000:  
             break
 
     
-    return total_reward
+    return steps_balanced
 
 
 def eval_genome(I_min, I_diff, genomes, config):
@@ -48,7 +48,7 @@ def eval_genome(I_min, I_diff, genomes, config):
 
 
 param_ranges = {
-    "pop_size": (100, 200),
+    "pop_size": (50, 200),
     "bias_mutate_rate": (0.5, 1.0),
     "weight_mutate_rate": (0.5, 1.5),
     "conn_add_prob": (0.1, 0.5),
@@ -58,7 +58,7 @@ param_ranges = {
     "compatibility_disjoint_coefficient": (0.5, 2.0),
     "compatibility_weight_coefficient": (0.2, 1.0),
     "max_stagnation": (20, 100),
-    "I_min": (200.0, 600.0),
+    "I_min": (-600.0, 600.0),
     "I_diff": (50, 500),
 }
 
@@ -93,7 +93,8 @@ def run(config_values):
     def eval_genome_wrapper(genomes, config):
         eval_genome(config_values["I_min"], config_values["I_diff"], genomes, config)
     
-    winner = pop.run(eval_genome_wrapper, 10)
+    winner = pop.run(eval_genome_wrapper, 50)
+    print(winner)
     '''
     print('\nBest genome:\n', winner)
 
@@ -128,21 +129,71 @@ def run(config_values):
     return winner.fitness if winner else 0
 
 
-def random_search(n_trials=10):
-    best_config = None
-    best_fitness = float('-inf')
+def create_study():
+    """Creates an Optuna study with the appropriate parameter ranges"""
+    def objective(trial):
+        config_values = {
+            "pop_size": trial.suggest_int("pop_size", 150, 250),
+            "bias_mutate_rate": trial.suggest_float("bias_mutate_rate", 0.4, 0.7),
+            "weight_mutate_rate": trial.suggest_float("weight_mutate_rate", 0.8, 1.1),
+            "conn_add_prob": trial.suggest_float("conn_add_prob", 0.1, 0.2),
+            "conn_delete_prob": trial.suggest_float("conn_delete_prob", 0.3, 0.4),
+            "node_add_prob": trial.suggest_float("node_add_prob", 0.1, 0.2),
+            "node_delete_prob": trial.suggest_float("node_delete_prob", 0.2, 0.3),
+            "compatibility_disjoint_coefficient": trial.suggest_float("compatibility_disjoint_coefficient", 0.8, 1.0),
+            "compatibility_weight_coefficient": trial.suggest_float("compatibility_weight_coefficient", 0.6, 0.8),
+            "max_stagnation": trial.suggest_int("max_stagnation", 30, 40),
+            "I_min": trial.suggest_float("I_min", -200, -150),
+            "I_diff": trial.suggest_int("I_diff", 450, 500)
+        }
+        
+        # Run multiple times to get a more stable fitness estimate
+        n_runs = 3
+        total_fitness = 0
+        for _ in range(n_runs):
+            fitness = run(config_values)
+            total_fitness += fitness
+        
+        return total_fitness / n_runs
 
-    for _ in range(n_trials):
-        config_values = random_config()
-        fitness = run(config_values)
-        if fitness > best_fitness:
-            best_fitness = fitness
-            best_config = config_values
-            
-        print(f"Test with config {config_values}, Fitness: {fitness}")
+    # Create study with optimization direction
+    study = optuna.create_study(direction="maximize")
     
-    print(f"Best configuration: {best_config}, Fitness: {best_fitness}")
-    return best_config
+    # Add a callback to print intermediate results
+    def print_callback(study, trial):
+        print(f"\nTrial {trial.number}:")
+        print(f"Current value: {trial.value}")
+        print("Best parameters:", study.best_params)
+        print("Best value:", study.best_value)
+    
+    return study, objective, print_callback
+
+def optimize_parameters(n_trials=50):
+    """Run the optimization process"""
+    study, objective, callback = create_study()
+    
+    # Run the optimization
+    study.optimize(objective, n_trials=n_trials, callbacks=[callback])
+    
+    # Print final results
+    print("\n=== Optimization Complete ===")
+    print("Best parameters:", study.best_params)
+    print("Best fitness:", study.best_value)
+    
+    # Plot optimization results
+    try:
+        optuna.visualization.plot_optimization_history(study)
+        optuna.visualization.plot_param_importances(study)
+    except:
+        print("Could not create visualizations (requires plotly)")
+    
+    return study.best_params
 
 if __name__ == '__main__':
-    best_config = random_search(1000)
+    # Run optimization
+    best_params = optimize_parameters(10)
+    
+    # Test the best parameters
+    print("\nTesting best parameters...")
+    final_fitness = run(best_params)
+    print(f"Final test fitness: {final_fitness}")

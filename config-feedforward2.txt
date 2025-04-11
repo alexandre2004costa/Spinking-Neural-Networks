@@ -58,7 +58,7 @@ num_inputs = 4
 
 num_outputs = 2
 
-num_hidden = 10
+num_hidden = 3
 
 response_init_mean = 1.0
 response_init_stdev = 0.0

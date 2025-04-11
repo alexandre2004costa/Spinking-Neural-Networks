@@ -170,16 +170,16 @@ def run(config_values):
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          "oi.txt")
     
-    #config.pop_size = int(config_values["pop_size"])
-    #config.genome_config.bias_mutate_rate = config_values["bias_mutate_rate"]
-    #config.genome_config.weight_mutate_rate = config_values["weight_mutate_rate"]
-    #config.genome_config.conn_add_prob = config_values["conn_add_prob"]
-    #config.genome_config.conn_delete_prob = config_values["conn_delete_prob"]
-    #config.genome_config.node_add_prob = config_values["node_add_prob"]
-    #config.genome_config.node_delete_prob = config_values["node_delete_prob"]
-    #config.species_set_config.compatibility_disjoint_coefficient = config_values["compatibility_disjoint_coefficient"]
-    #config.species_set_config.compatibility_weight_coefficient = config_values["compatibility_weight_coefficient"]
-    #config.stagnation_config.max_stagnation = int(config_values["max_stagnation"])
+    config.pop_size = int(config_values["pop_size"])
+    config.genome_config.bias_mutate_rate = config_values["bias_mutate_rate"]
+    config.genome_config.weight_mutate_rate = config_values["weight_mutate_rate"]
+    config.genome_config.conn_add_prob = config_values["conn_add_prob"]
+    config.genome_config.conn_delete_prob = config_values["conn_delete_prob"]
+    config.genome_config.node_add_prob = config_values["node_add_prob"]
+    config.genome_config.node_delete_prob = config_values["node_delete_prob"]
+    config.species_set_config.compatibility_disjoint_coefficient = config_values["compatibility_disjoint_coefficient"]
+    config.species_set_config.compatibility_weight_coefficient = config_values["compatibility_weight_coefficient"]
+    config.stagnation_config.max_stagnation = int(config_values["max_stagnation"])
     #config.genome_config.num_hidden = int(config_values["num_hidden"])
 
     pop = neat.population.Population(config)
@@ -198,7 +198,7 @@ def run(config_values):
     print('I-min:', config_values["I_min"])
     print('I-diff:', config_values["I_diff"])
 
-    if winner.fitness > 1000:
+    if winner.fitness >= 100000:
 
         # Display the best genome
         state = np.array([0, 0, 0.05, 0])
@@ -236,6 +236,11 @@ def run(config_values):
             if abs(x) > position_limit or abs(theta) > angle_limit:
                 message = "Failed! Restarting..."
                 state = np.array([0, 0, 0.05, 0])
+                net = convert_genome_to_snn(winner, config)
+                num_hidden = net.fc1.out_features
+                num_outputs = net.fc2.out_features
+                s1 = torch.zeros(1, num_hidden)
+                s2 = torch.zeros(1, num_outputs)
                 time.sleep(1)
 
             draw_cartpole(screen, state, 0, 0, 0, message)
@@ -250,7 +255,7 @@ def random_search(n_trials=10):
     best_fitness = float('-inf')
 
     for _ in range(n_trials):
-        config_values = random_config()
+        config_values = {'pop_size': 171, 'bias_mutate_rate': 0.5230790860447896, 'weight_mutate_rate': 1.2258341513572386, 'conn_add_prob': 0.3476145006301879, 'conn_delete_prob': 0.18904010926789036, 'node_add_prob': 0.2374980918364757, 'node_delete_prob': 0.15772024546933505, 'compatibility_disjoint_coefficient': 1.943134293658721, 'compatibility_weight_coefficient': 0.9148384084033248, 'max_stagnation': 27, 'I_min': -184.75081947146862, 'I_diff': 469}
         fitness = run(config_values)
         if fitness > best_fitness:
             best_fitness = fitness

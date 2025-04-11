@@ -130,7 +130,6 @@ def run(config_values):
 
 
 def create_study():
-    """Creates an Optuna study with the appropriate parameter ranges"""
     def objective(trial):
         config_values = {
             "pop_size": trial.suggest_int("pop_size", 150, 250),
@@ -147,7 +146,6 @@ def create_study():
             "I_diff": trial.suggest_int("I_diff", 450, 500)
         }
         
-        # Run multiple times to get a more stable fitness estimate
         n_runs = 3
         total_fitness = 0
         for _ in range(n_runs):
@@ -156,10 +154,8 @@ def create_study():
         
         return total_fitness / n_runs
 
-    # Create study with optimization direction
     study = optuna.create_study(direction="maximize")
     
-    # Add a callback to print intermediate results
     def print_callback(study, trial):
         print(f"\nTrial {trial.number}:")
         print(f"Current value: {trial.value}")
@@ -172,15 +168,12 @@ def optimize_parameters(n_trials=50):
     """Run the optimization process"""
     study, objective, callback = create_study()
     
-    # Run the optimization
     study.optimize(objective, n_trials=n_trials, callbacks=[callback])
     
-    # Print final results
     print("\n=== Optimization Complete ===")
     print("Best parameters:", study.best_params)
     print("Best fitness:", study.best_value)
     
-    # Plot optimization results
     try:
         optuna.visualization.plot_optimization_history(study)
         optuna.visualization.plot_param_importances(study)
@@ -190,10 +183,10 @@ def optimize_parameters(n_trials=50):
     return study.best_params
 
 if __name__ == '__main__':
-    # Run optimization
+
     best_params = optimize_parameters(10)
     
-    # Test the best parameters
+
     print("\nTesting best parameters...")
     final_fitness = run(best_params)
     print(f"Final test fitness: {final_fitness}")

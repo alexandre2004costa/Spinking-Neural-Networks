@@ -9,3 +9,6 @@ Best configuration: {'pop_size': 193.38307184670424, 'bias_mutate_rate': 0.83664
 Best configuration: {'pop_size': 90, 'bias_mutate_rate': 0.5955291233833027, 'weight_mutate_rate': 0.9439916347127567, 'conn_add_prob': 0.11216284123437936, 'conn_delete_prob': 0.358956237653709, 'node_add_prob': 0.15323417191032657, 'node_delete_prob': 0.2745254793841592, 'compatibility_disjoint_coefficient': 0.943309726907201, 'compatibility_weight_coefficient': 0.6951868002468791, 'max_stagnation': 34, 'I_min': -166.7904847973506, 'I_diff': 484}, Fitness: 3615
 
 {'pop_size': 156, 'bias_mutate_rate': 0.5529403627089193, 'weight_mutate_rate': 0.8940978000002908, 'conn_add_prob': 0.1597906565350114, 'conn_delete_prob': 0.39322022860866135, 'node_add_prob': 0.15504245361319274, 'node_delete_prob': 0.29028868401794633, 'compatibility_disjoint_coefficient': 0.8804122286986154, 'compatibility_weight_coefficient': 0.7509950987266565, 'max_stagnation': 39, 'I_min': -159.79031772078966, 'I_diff': 481}. Best is trial 5 with value: 7217.666666666667.
+
+I-min: -184.75081947146862
+I-diff: 469

@@ -17,7 +17,7 @@ class SpikingNetwork(nn.Module):
         super().__init__()
         
         beta = 0.85  
-        threshold = 30.0  
+        threshold = 1.0  
         reset_mechanism = "subtract" 
         
         # Define as camadas
@@ -192,9 +192,12 @@ def run(config_values):
     def eval_genome_wrapper(genomes, config):
         eval_genome(config_values["I_min"], config_values["I_diff"], genomes, config)
     
-    winner = pop.run(eval_genome_wrapper, 30)
+    winner = pop.run(eval_genome_wrapper, 100)
     
     print('\nBest genome:\n', winner)
+    print('I-min:', config_values["I_min"])
+    print('I-diff:', config_values["I_diff"])
+
     if winner.fitness > 1000:
 
         # Display the best genome
@@ -226,6 +229,7 @@ def run(config_values):
                 action = 0
             else:
                 action = 1
+            
             state = simulate_cartpole(action, state)
             x, _, theta, _ = state
             message = ""

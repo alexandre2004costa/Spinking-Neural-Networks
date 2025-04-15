@@ -1,0 +1,123 @@
+Best configuration: {'pop_size': 191, 'bias_mutate_rate': 0.8195108624832916, 'weight_mutate_rate': 0.9941285447285568, 'conn_add_prob': 0.22857433132674077, 'conn_delete_prob': 0.2010012439539137, 'node_add_prob': 0.10608193212219079, 'node_delete_prob': 0.20808811873424782, 'compatibility_disjoint_coefficient': 0.9470632541125124, 'compatibility_weight_coefficient': 0.4689150058343839, 'max_stagnation': 94, 'I_min': 241.99877652711078, 'I_diff': 224.69977570187314}, Fitness: 1082.8188991431466
+Best configuration: {'pop_size': 165, 'bias_mutate_rate': 0.5216635665292143, 'weight_mutate_rate': 0.8367391543962718, 'conn_add_prob': 0.32677135170768434, 'conn_delete_prob': 0.2524018402262785, 'node_add_prob': 0.16294466887200126, 'node_delete_prob': 0.26127736951405633, 'compatibility_disjoint_coefficient': 0.9986542960324382, 'compatibility_weight_coefficient': 0.6364941920816414, 'max_stagnation': 64, 'I_min': 387.366545361778, 'I_diff': 299.6050618378404}, Fitness: 1568.922820651681 Fitness: 2047.1607161871484
+
+10 iterations:
+Best configuration: {'pop_size': 171, 'bias_mutate_rate': 0.888365524270139, 'weight_mutate_rate': 1.260988067714043, 'conn_add_prob': 0.11837010042700827, 'conn_delete_prob': 0.2572426286852314, 'node_add_prob': 0.17931581573201943, 'node_delete_prob': 0.15845992561616645, 'compatibility_disjoint_coefficient': 0.6947587140844378, 'compatibility_weight_coefficient': 0.5897737116189095, 'max_stagnation': 79, 'I_min': 599.1519098208221, 'I_diff': 464}, Fitness: 1400.3591585164402
+
+Best configuration: {'pop_size': 193.38307184670424, 'bias_mutate_rate': 0.8366458058532118, 'weight_mutate_rate': 1.019175631036526, 'conn_add_prob': 0.18498718095358005, 'conn_delete_prob': 0.11032646351261427, 'node_add_prob': 0.06315246772175657, 'node_delete_prob': 0.2737054174524175, 'compatibility_disjoint_coefficient': 1.4117675106945486, 'compatibility_weight_coefficient': 0.27346830145180895, 'max_stagnation': 43, 'num_hidden': 6, 'I_min': 13.644306823097907, 'I_diff': 34.5042198745761}, Fitness: 915
+
+Best configuration: {'pop_size': 90, 'bias_mutate_rate': 0.5955291233833027, 'weight_mutate_rate': 0.9439916347127567, 'conn_add_prob': 0.11216284123437936, 'conn_delete_prob': 0.358956237653709, 'node_add_prob': 0.15323417191032657, 'node_delete_prob': 0.2745254793841592, 'compatibility_disjoint_coefficient': 0.943309726907201, 'compatibility_weight_coefficient': 0.6951868002468791, 'max_stagnation': 34, 'I_min': -166.7904847973506, 'I_diff': 484}, Fitness: 3615
+
+{'pop_size': 156, 'bias_mutate_rate': 0.5529403627089193, 'weight_mutate_rate': 0.8940978000002908, 'conn_add_prob': 0.1597906565350114, 'conn_delete_prob': 0.39322022860866135, 'node_add_prob': 0.15504245361319274, 'node_delete_prob': 0.29028868401794633, 'compatibility_disjoint_coefficient': 0.8804122286986154, 'compatibility_weight_coefficient': 0.7509950987266565, 'max_stagnation': 39, 'I_min': -159.79031772078966, 'I_diff': 481}. Best is trial 5 with value: 7217.666666666667.
+
+{'pop_size': 171, 'bias_mutate_rate': 0.5230790860447896, 'weight_mutate_rate': 1.2258341513572386, 'conn_add_prob': 0.3476145006301879, 'conn_delete_prob': 0.18904010926789036, 'node_add_prob': 0.2374980918364757, 'node_delete_prob': 0.15772024546933505, 'compatibility_disjoint_coefficient': 1.943134293658721, 'compatibility_weight_coefficient': 0.9148384084033248, 'max_stagnation': 27, 'I_min': -184.75081947146862, 'I_diff': 469}
+I-min: -184.75081947146862
+I-diff: 469
+
+
+Neat Iznn
+#--- parameters for the XOR-2 experiment ---#
+
+[NEAT]
+fitness_criterion     = max
+fitness_threshold     = 100000
+pop_size              = 150
+reset_on_extinction   = False
+
+[IZGenome]
+# node bias options
+bias_init_mean = 0.0
+bias_init_stdev = 1.0
+bias_max_value = 30.0
+bias_min_value = -30.0
+bias_mutate_power = 0.5
+bias_mutate_rate = 0.7
+bias_replace_rate = 0.1
+
+# genome compatibility options
+compatibility_disjoint_coefficient = 1.0
+compatibility_weight_coefficient   = 0.5
+
+# connection add/remove rates
+conn_add_prob = 0.5
+conn_delete_prob = 0.5
+
+# connection enable options
+enabled_default         = True
+enabled_mutate_rate     = 0.01
+
+feed_forward = True 
+initial_connection = full_direct
+
+# node add/remove rates
+node_add_prob           = 0.2
+node_delete_prob        = 0.2
+
+# network parameters
+num_hidden              = 0
+num_inputs              = 4
+num_outputs             = 1
+
+# node parameters for regular spiking
+a_init_mean      = 0.02
+a_init_stdev     = 0.0
+a_max_value      = 30.0
+a_min_value      = -30.0
+a_mutate_power   = 0.0
+a_mutate_rate    = 0.0
+a_replace_rate   = 0.0
+
+b_init_mean      = 0.2
+b_init_stdev     = 0.0
+b_max_value      = 30.0
+b_min_value      = -30.0
+b_mutate_power   = 0.0
+b_mutate_rate    = 0.0
+b_replace_rate   = 0.0
+
+c_init_mean      = -50.0
+c_init_stdev     = 0.0
+c_max_value      = 30.0
+c_min_value      = -30.0
+c_mutate_power   = 0.0
+c_mutate_rate    = 0.0
+c_replace_rate   = 0.0
+
+d_init_mean      = 2.0
+d_init_stdev     = 0.0
+d_max_value      = 30.0
+d_min_value      = -30.0
+d_mutate_power   = 0.0
+d_mutate_rate    = 0.0
+d_replace_rate   = 0.0
+
+# connection weight options
+weight_init_mean = 20.0         
+weight_init_stdev = 2.0          
+weight_max_value = 50.0          
+weight_min_value = -50.0         
+weight_mutate_power = 1.0        
+weight_mutate_rate = 0.8
+weight_replace_rate = 0.1
+
+[DefaultSpeciesSet]
+compatibility_threshold = 3.0
+
+[DefaultStagnation]
+species_fitness_func = max
+max_stagnation = 15
+species_elitism = 1
+
+
+[DefaultReproduction]
+elitism = 2 
+survival_threshold = 0.2
+min_species_size = 2
+
+Final test fitness: 89889
+{'I_min': -185.20966099570762, 'I_diff': 471, 'background': 0.3531840776152606, 'weight_init_mean': 15.312074270957652, 'weight_init_stdev': 2.721486079549555, 'weight_max_value': 48.37166968093461, 'weight_min_value': -53.90179586039318, 'weight_mutate_power': 1.348883789152442, 'weight_mutate_rate': 0.7612022202685518, 'weight_replace_rate': 0.1415782630854031}
+
+
+Found solution
+{'I_min': -185.20966099570762, 'I_diff': 471, 'background': 50.3531840776152606, 'weight_init_mean': 15.312074270957652, 'weight_init_stdev': 2.721486079549555, 'weight_max_value': 48.37166968093461, 'weight_min_value': -53.90179586039318, 'weight_mutate_power': 1.348883789152442, 'weight_mutate_rate': 0.7612022202685518, 'weight_replace_rate': 0.1415782630854031}
+W 3 hidden nodes, found in 1 gen

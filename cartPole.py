@@ -27,7 +27,7 @@ max_vals = np.array([2.4, 12.0, 0.21, 12.0])
 
 def simulate_cartpole(action, state):
     x, x_vel, theta, theta_vel = state # the 4 inputs
-    force = cart_force if action == 1 else -cart_force
+    force = cart_force if action > 0 else -cart_force
 
     cos_theta = math.cos(theta)
     sin_theta = math.sin(theta)

@@ -5,7 +5,6 @@ pop_size = 50
 reset_on_extinction = False
 
 [DefaultReproduction]
-# Valor default é 0
 elitism = 2 
 survival_threshold = 0.2
 min_species_size = 2

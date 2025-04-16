@@ -1,14 +1,15 @@
 from neat_iznn import *
 from cartPole import *
+from rate_iznn import RateIZNN
 
 def simulate(I_min, I_diff, I_background, genome, config):
-    net = neat.iznn.IZNN.create(genome, config)  
+    net = RateIZNN.create(genome, config)  
     state = np.array([0, 0, 0.05, 0])
     steps_balanced = 0
 
     
     while True:
-        input_values = encode_input(state, min_vals, max_vals, I_min, I_min + I_diff)
+        input_values = encode_input(state, min_vals, max_vals, 0, 1)
         net.set_inputs(input_values)
 
         for neuron in net.neurons.values():
@@ -17,6 +18,7 @@ def simulate(I_min, I_diff, I_background, genome, config):
             value += I_background
 
         output = net.advance(0.02)     
+        #print(output)
         state = simulate_cartpole(output[0], state)
         x, _, theta, _ = state
         
@@ -32,7 +34,7 @@ def simulate(I_min, I_diff, I_background, genome, config):
 
 def gui(winner, config, I_min, I_diff, I_background, generation_reached):
     state = np.array([0, 0, 0.05, 0])
-    net = neat.iznn.IZNN.create(winner, config)  
+    net = RateIZNN.create(winner, config)  
     running = True
     pygame.init()
     screen = pygame.display.set_mode((screen_width, screen_height))
@@ -43,7 +45,7 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
             if event.type == pygame.QUIT:
                 running = False
 
-        input_values = encode_input(state, min_vals, max_vals, I_min, I_min + I_diff)
+        input_values = encode_input(state, min_vals, max_vals, 0, 1)
         net.set_inputs(input_values)
 
         for neuron in net.neurons.values():
@@ -56,7 +58,7 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
         x, _, theta, _ = state
         
         if abs(x) > position_limit or abs(theta) > angle_limit:
-            net = neat.iznn.IZNN.create(winner, config)  
+            net = RateIZNN.create(winner, config)  
             state = np.array([0, 0, 0.05, 0])
             time.sleep(1)
 

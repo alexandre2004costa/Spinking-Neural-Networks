@@ -2,11 +2,16 @@
 
 [NEAT]
 fitness_criterion     = max
-fitness_threshold     = 100000
+fitness_threshold     = 90
 pop_size              = 50
 reset_on_extinction   = False
 
 [IZGenome]
+# node bias options
+activation_default     = tanh
+activation_mutate_rate = 0.0
+activation_options     = tanh
+
 # node bias options
 bias_init_mean = 0.0
 bias_init_stdev = 1.0
@@ -15,14 +20,6 @@ bias_min_value = -30.0
 bias_mutate_power = 0.5
 bias_mutate_rate = 0.7
 bias_replace_rate = 0.1
-
-activation_default = sigmoid
-activation_mutate_rate = 0.1
-activation_options = sigmoid
-
-aggregation_default = sum
-aggregation_mutate_rate = 0.0
-aggregation_options = sum
 
 # genome compatibility options
 compatibility_disjoint_coefficient = 1.0
@@ -44,50 +41,42 @@ node_add_prob           = 0.2
 node_delete_prob        = 0.2
 
 # network parameters
-num_hidden              = 0
-num_inputs              = 4
-num_outputs             = 1
+num_inputs             = 2
+num_outputs            = 1
+num_hidden             = 0
 
 # node parameters for regular spiking
 a_init_mean      = 0.02
-a_init_stdev     = 0.002
-a_max_value      = 0.1
-a_min_value      = 0.01
-a_mutate_power   = 0.002
-a_mutate_rate    = 0.2
-a_replace_rate   = 0.1
+a_init_stdev     = 0.0
+a_max_value      = 30.0
+a_min_value      = -30.0
+a_mutate_power   = 0.0
+a_mutate_rate    = 0.0
+a_replace_rate   = 0.0
 
 b_init_mean      = 0.2
-b_init_stdev     = 0.02
-b_max_value      = 0.3
-b_min_value      = 0.1
-b_mutate_power   = 0.02
-b_mutate_rate    = 0.2
-b_replace_rate   = 0.1
+b_init_stdev     = 0.0
+b_max_value      = 30.0
+b_min_value      = -30.0
+b_mutate_power   = 0.0
+b_mutate_rate    = 0.0
+b_replace_rate   = 0.0
 
-c_init_mean      = -65.0
-c_init_stdev     = 5.0
-c_max_value      = -60.0
-c_min_value      = -70.0
-c_mutate_power   = 0.5
-c_mutate_rate    = 0.2
-c_replace_rate   = 0.1
+c_init_mean      = -50.0
+c_init_stdev     = 0.0
+c_max_value      = 30.0
+c_min_value      = -30.0
+c_mutate_power   = 0.0
+c_mutate_rate    = 0.0
+c_replace_rate   = 0.0
 
-d_init_mean      = 8.0
-d_init_stdev     = 2.0
-d_max_value      = 10.0
-d_min_value      = 6.0
-d_mutate_power   = 0.2
-d_mutate_rate    = 0.2
-d_replace_rate   = 0.1
-
-response_init_mean  = 1.0
-response_init_stdev = 0.0
-response_max_value  = 30.0
-response_min_value  = -30.0
-response_mutate_power = 0.0
-response_mutate_rate  = 0.0
-response_replace_rate = 0.0
+d_init_mean      = 2.0
+d_init_stdev     = 0.0
+d_max_value      = 30.0
+d_min_value      = -30.0
+d_mutate_power   = 0.0
+d_mutate_rate    = 0.0
+d_replace_rate   = 0.0
 
 # connection weight options
 weight_init_mean = 20.0         
@@ -103,8 +92,9 @@ compatibility_threshold = 3.0
 
 [DefaultStagnation]
 species_fitness_func = max
-max_stagnation = 20
-species_elitism = 2
+max_stagnation = 15
+species_elitism = 1
+
 
 [DefaultReproduction]
 elitism = 2 

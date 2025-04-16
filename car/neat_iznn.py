@@ -1,7 +1,6 @@
 import neat
 import numpy as np
 import time
-from rate_iznn import RateIZNN 
 
 
 def encode_input(state, min_vals, max_vals, I_min=20.0, I_max=100.0):
@@ -20,11 +19,6 @@ def run(config_values, simulateFunc, config_file, guiFunc, num_Generations=50):
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
     
-    def create_phenotype(genome):
-        return RateIZNN.create(genome, config)
-    
-    neat.iznn.IZGenome.create_phenotype = create_phenotype
-
     config.genome_config.weight_init_mean = config_values["weight_init_mean"]
     config.genome_config.weight_init_stdev = config_values["weight_init_stdev"]
     config.genome_config.weight_max_value = config_values["weight_max_value"]
@@ -52,5 +46,5 @@ def run(config_values, simulateFunc, config_file, guiFunc, num_Generations=50):
         eval_genome(config_values["I_min"], config_values["I_diff"], config_values["background"], simulateFunc, genomes, config)
     
     winner = pop.run(eval_genome_wrapper, num_Generations)
-    print(winner)
-    guiFunc(winner, config, config_values["I_min"], config_values["I_diff"], config_values["background"], generation_reached)
+    #print(winner)
+    #guiFunc(winner, config, config_values["I_min"], config_values["I_diff"], config_values["background"], generation_reached)

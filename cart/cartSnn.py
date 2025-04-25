@@ -2,6 +2,20 @@ from neat_iznn import *
 from cartPole import *
 from rate_iznn import RateIZNN
 
+def decode_output(firing_rate, threshold=0.0):
+    """
+    Decode firing rate to cart force:
+    - Above threshold: Apply +10N force
+    - Below threshold: Apply -10N force
+    
+    Args:
+        firing_rate (float): Firing rate in Hz
+        threshold (float): Threshold for decision boundary
+    Returns:
+        float: Force to apply (-10 or +10)
+    """
+    return 1 if firing_rate > threshold else 0
+
 def simulate(I_min, I_diff, I_background, genome, config):
     net = RateIZNN.create(genome, config)  
     state = np.array([0, 0, 0.05, 0])
@@ -19,7 +33,9 @@ def simulate(I_min, I_diff, I_background, genome, config):
 
         output = net.advance(0.02)     
         #print(output)
-        state = simulate_cartpole(output[0], state)
+        action = decode_output(output[0])
+        #print(action)
+        state = simulate_cartpole(action, state)
         x, _, theta, _ = state
         
         if abs(x) > position_limit or abs(theta) > angle_limit:

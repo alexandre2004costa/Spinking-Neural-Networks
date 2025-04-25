@@ -6,18 +6,19 @@ class RateIZNN(neat.iznn.IZNN):
     def __init__(self, neurons, inputs, outputs):
         super().__init__(neurons, inputs, outputs)
         self.rate_window = 1  # 1s window
-        self.simulation_steps = 200
+        self.simulation_steps = 400
         self.dt = 0.02
         self.spike_trains = {i: [] for i in outputs}
+        self.input_currents = {}  # Store converted input currents
         self.input_fired = {}  # Track input firing status
         
-    def set_inputs(self, inputs):
+    def set_inputs(self, inputs, I_min=20.0, I_max=100.0):
         """Store normalized inputs [0,1] for probability-based spike generation"""
         if len(inputs) != len(self.inputs):
             raise RuntimeError("Input size mismatch")
         for i, v in zip(self.inputs, inputs):
-            # Ensure input is normalized
-            self.input_values[i] = max(0.0, min(1.0, v))
+           self.input_values[i] = v
+           self.input_currents[i] = I_min + v * I_max  # Scale input to current range
             
     def advance(self, dt):
         # Reset spike counts
@@ -39,13 +40,14 @@ class RateIZNN(neat.iznn.IZNN):
             
             # Then update neurons using pre-determined input spikes
             for n in self.neurons.values():
-                n.current = n.bias
+                n.current = n.bias + random.gauss(0, 0.1) # Add background noise
                 
                 # Process inputs
                 for i, w in n.inputs:
                     if i in self.inputs:
                         # Use pre-determined firing status
                         if self.input_fired[i]:
+                            #n.current += self.input_currents[i] * w
                             n.current += w
                     else:
                         # Process neuron-to-neuron connections
@@ -53,20 +55,15 @@ class RateIZNN(neat.iznn.IZNN):
                         if ineuron is not None:
                             n.current += ineuron.fired * w
                 
-            for n in self.neurons.values():
                 n.advance(self.dt)
-                #print(n.v, n.fired, n.current)
                 if n.fired > 0:
                     n.spike_count += 1
+            #print("Neurons fired:", self.input_fired)
+            #print("neuron inputs:", self.input_values)
         
         # Calculate firing rates for outputs
         window_time = self.simulation_steps * self.dt
-        output_rates = []
-        for i in self.outputs:
-            rate = self.neurons[i].spike_count / window_time
-            output_rates.append(rate)
-            
-        return output_rates
+        return [self.neurons[i].spike_count / window_time for i in self.outputs]
 
     @staticmethod
     def create(genome, config):

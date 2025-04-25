@@ -3,7 +3,7 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 100000
-pop_size              = 150
+pop_size              = 50
 reset_on_extinction   = False
 
 [IZGenome]
@@ -38,6 +38,8 @@ enabled_mutate_rate     = 0.01
 
 feed_forward = True 
 initial_connection = full
+
+#disallow_direct = True 
 
 # node add/remove rates
 node_add_prob           = 0.2

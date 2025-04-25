@@ -153,7 +153,10 @@ class IZNeuron:
         """
         try:
             # Euler integration
+            print(f"Current before advance: {self.v}")
+            print(f"Current before: {self.current}")
             self.v += dt * (0.04 * self.v**2 + 5*self.v + 140 - self.u + self.current)
+            print(f"Current after advance: {self.v}")
             self.u += dt * self.a * (self.b * self.v - self.u)
             
             self.fired = 0.0
@@ -171,6 +174,7 @@ class IZNeuron:
                 self.spike_train.pop(0)
                 
         except OverflowError:
+            print("Overflow error in advance method")
             self.reset()
 
     def reset(self):

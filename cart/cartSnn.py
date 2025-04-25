@@ -83,5 +83,11 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
         clock.tick(50)
     pygame.quit()
 
-run({'I_min': -185.20966099570762, 'I_diff': 471, 'background': 50.3531840776152606, 'weight_init_mean': 15.312074270957652, 'weight_init_stdev': 2.721486079549555, 'weight_max_value': 48.37166968093461, 'weight_min_value': -53.90179586039318, 'weight_mutate_power': 1.348883789152442, 'weight_mutate_rate': 0.7612022202685518, 'weight_replace_rate': 0.1415782630854031}
-    , simulate, "cart/cartSnn_config.txt", gui, 150)
+run({'I_min': -185.20966099570762, 'I_diff': 471, 'background': 50.3531840776152606,'weight_init_mean': 18.0,
+'weight_init_stdev': 4.0,
+'weight_max_value': 60.0,
+'weight_min_value': -40.0,
+'weight_mutate_power': 2.0,
+'weight_mutate_rate': 0.76,
+'weight_replace_rate': 0.2}
+    , simulate, "cart/cartSnn_config.txt", gui, 50)

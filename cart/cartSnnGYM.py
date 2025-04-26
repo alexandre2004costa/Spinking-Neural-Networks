@@ -17,60 +17,47 @@ def simulate(I_min, I_diff, I_background, genome, config):
     steps_balanced = 0
 
     while True:
-        input_values = encode_input(state, min_vals, max_vals, 0, 1)
+        input_values = encode_input(state,env.observation_space.low, 
+                                        env.observation_space.high, 0, 1)
         net.set_inputs(input_values)
-
         output = net.advance(0.02)     
         #print(output)
         action = decode_output(output[0])
         #print(action)
-        state = simulate_cartpole(action, state)
-        x, _, theta, _ = state
-        
-        if abs(x) > position_limit or abs(theta) > angle_limit:
+        state, reward, terminated, truncated, _ = env.step(action)
+        if terminated or truncated:
             break
         
         steps_balanced += 1
         
         if steps_balanced >= 100000:
             break
-    
+
+    env.close()
     return steps_balanced
 
 def gui(winner, config, I_min, I_diff, I_background, generation_reached):
-    state = np.array([0, 0, 0.05, 0])
+    env = gym.make("CartPole-v1", render_mode="human")
     net = RateIZNN.create(winner, config)  
-    running = True
-    pygame.init()
-    screen = pygame.display.set_mode((screen_width, screen_height))
-    clock = pygame.time.Clock()
+    state, _ = env.reset()
 
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        input_values = encode_input(state, min_vals, max_vals, 0, 1)
+    done = False
+    while not done:
+        # Processa o estado
+        input_values = encode_input(state,env.observation_space.low, 
+                                        env.observation_space.high, 0, 1)
         net.set_inputs(input_values)
-
-        for neuron in net.neurons.values():
-            neuron.current += I_background
-        for value in net.input_values:
-            value += I_background
-
-        output = net.advance(0.02)     
-        state = simulate_cartpole(output[0], state)
-        x, _, theta, _ = state
+        output = net.advance(0.02)
+        action = decode_output(output[0])
+        state, reward, terminated, truncated, _ = env.step(action)
         
-        if abs(x) > position_limit or abs(theta) > angle_limit:
-            net = RateIZNN.create(winner, config)  
-            state = np.array([0, 0, 0.05, 0])
+        if terminated or truncated:
             time.sleep(1)
-
-        draw_cartpole(screen, state, generation_reached, 0, 0, "")
-
-        clock.tick(50)
-    pygame.quit()
+            state, _ = env.reset()
+            net = RateIZNN.create(winner, config)
+        
+        time.sleep(0.02)
+    env.close()
 
 run({'I_min': -185.20966099570762, 'I_diff': 471, 'background': 50.3531840776152606,'weight_init_mean': 18.0,
 'weight_init_stdev': 4.0,

@@ -12,7 +12,7 @@ class RateIZNN(neat.iznn.IZNN):
         self.input_currents = {}  # Store converted input currents
         self.input_fired = {}  # Track input firing status
         
-    def set_inputs(self, inputs, I_min=20.0, I_max=100.0):
+    def set_inputs(self, inputs, I_min=0.0, I_max=100.0):
         """Store normalized inputs [0,1] for probability-based spike generation"""
         if len(inputs) != len(self.inputs):
             raise RuntimeError("Input size mismatch")
@@ -36,15 +36,14 @@ class RateIZNN(neat.iznn.IZNN):
                 if i in self.outputs:
                     continue  # só tratamos hidden nesta fase
 
-                n.current = n.bias # background
+                n.current = n.bias + random.uniform(0, 5) # background
 
                 for j, w in n.inputs:
                     if j in self.inputs:
                         if self.input_fired[j]:
                             n.current += w
-                            n.current += w
                     else:
-                        ineuron = self.neurons.get(j)
+                        ineuron = self.neurons[j]
                         if ineuron is not None:
                             n.current += ineuron.fired * w
 
@@ -62,16 +61,20 @@ class RateIZNN(neat.iznn.IZNN):
             # --- Fase 2: Propagação dos hidden para os output ---
             for i in self.outputs:
                 n = self.neurons[i]
-                n.current = n.bias # background
-
+                n.current = n.bias + random.uniform(0, 10) # background
+                #print(n.inputs)
+                #print([n.fired for n in self.neurons.values()])
                 for j, w in n.inputs:
                     if j in self.inputs:
                         if self.input_fired[j]:
-                            n.current += w
+                            n.current +=  w
                     else:
-                        ineuron = self.neurons.get(j)
+                        ineuron = self.neurons[j]
+                        #print(ineuron)
                         if ineuron is not None:
                             n.current += ineuron.fired * w
+                            #print(ineuron.fired * w)
+                            #print(n.current)
 
             # Update output neurons
             for i in self.outputs:
@@ -82,7 +85,7 @@ class RateIZNN(neat.iznn.IZNN):
                 if n.fired > 0:
                     n.spike_count += 1
 
-       # print("Spike counts:", [self.neurons[i].spike_count for i, j in self.neurons.items()])
+        #print("Spike counts:", [self.neurons[i].spike_count for i, j in self.neurons.items()])
         window_time = self.simulation_steps * self.dt
         return [self.neurons[i].spike_count / window_time for i in self.outputs]
 

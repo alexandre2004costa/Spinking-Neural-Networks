@@ -12,8 +12,7 @@ def decode_output(firing_rate, threshold=0.0):
 
 def simulate(I_min, I_diff, I_background, genome, config):
     net = RateIZNN.create(genome, config)  
-    env = gym.make("CartPole-v1")
-    state, _ = env.reset()
+    state = np.array([0, 0, 0.05, 0])
     steps_balanced = 0
 
     while True:
@@ -72,7 +71,7 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
         clock.tick(50)
     pygame.quit()
 
-run({'I_min': -185.20966099570762, 'I_diff': 471, 'background': 50.3531840776152606,'weight_init_mean': 18.0,
+run({'I_min': -185.20966099570762, 'I_diff': 471, 'background': 50.3531840776152606,'weight_init_mean': 10.0,
 'weight_init_stdev': 4.0,
 'weight_max_value': 60.0,
 'weight_min_value': -40.0,

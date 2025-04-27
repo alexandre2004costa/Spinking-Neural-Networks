@@ -8,33 +8,22 @@ def simulate(I_min, I_diff, I_background, genome, config, num_trials=15):
     trials_reward = []
     
     for _ in range(num_trials):
-        net = neat.iznn.IZNN.create(genome, config)  
+        net = RateIZNN.create(genome, config)  
         env = gym.make("LunarLander-v3", render_mode=None)
         state, _ = env.reset()
         
         total_reward = 0
         steps = 0
         done = False
-        
-        sim_steps = 10  
-        dt = 0.02     
+          
 
         while not done:
             input_values = encode_input(state, env.observation_space.low, 
-                                        env.observation_space.high, I_min, I_min + I_diff)
+                                        env.observation_space.high, 0, 1)
             net.set_inputs(input_values)
 
-            spike_counts = np.zeros(len(net.outputs)) 
-
-            for _ in range(sim_steps):
-                for neuron in net.neurons.values():
-                    neuron.v += I_background
-        
-                output = net.advance(dt)  
-                #print(output)
-                spike_counts += output   
-
-            #print(spike_counts)
+            spike_counts = net.advance(0.02)
+            # print(spike_counts)
             action = np.argmax(spike_counts)  
 
             state, reward, terminated, truncated, _ = env.step(action)
@@ -54,27 +43,24 @@ def simulate(I_min, I_diff, I_background, genome, config, num_trials=15):
 def gui(winner, config, I_min, I_diff, I_background, generation_reached):
     env = gym.make("LunarLander-v3", render_mode="human")
     state, _ = env.reset()
-    net = neat.iznn.IZNN.create(winner, config)
+    net = RateIZNN.create(winner, config)
     
     episode = 0
     steps = 0
     total_reward = 0
     
     while episode < 5:
-        input_values = encode_input(state, I_min, I_min + I_diff)
+        input_values = encode_input(state, env.observation_space.low, 
+                                        env.observation_space.high, 0, 1)
         net.set_inputs(input_values)
 
-        for neuron in net.neurons.values():
-            neuron.current += I_background
-        for value in net.input_values:
-            value += I_background
+        spike_counts = net.advance(0.2)
+        action = np.argmax(spike_counts)  
 
-        output = net.advance(0.02)
-        action = np.argmax(output)
-        
         state, reward, terminated, truncated, _ = env.step(action)
-        steps += 1
         total_reward += reward
+        steps += 1
+        done = terminated or truncated or steps >= 1000
         
         env.render()
         if hasattr(env, 'window') and hasattr(env.window, 'window_surface_v2'):
@@ -85,7 +71,7 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
             steps = 0
             total_reward = 0
             state, _ = env.reset()
-            net = neat.iznn.IZNN.create(winner, config)
+            net = RateIZNN.create(winner, config)
             time.sleep(1)
     
     env.close()

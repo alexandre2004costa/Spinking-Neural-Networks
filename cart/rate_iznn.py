@@ -214,15 +214,14 @@ class SpikeMonitor:
 class RateIZNN(neat.iznn.IZNN):
     def __init__(self, neurons, inputs, outputs):
         super().__init__(neurons, inputs, outputs)
-        self.simulation_steps = 300
-        self.dt = 0.02
+        self.simulation_steps = 100
         self.spike_trains = {i: [] for i in outputs}
         self.input_currents = {}  # Store converted input currents
         self.input_fired = {}  # Track input firing status
         self.monitor = SpikeMonitor(self)
         self.nowFiring = set()
         
-    def set_inputs(self, inputs, I_min=0.0, I_max=100.0):
+    def set_inputs(self, inputs, I_min=0.0, I_max=10.0):
         """Store normalized inputs [0,1] for probability-based spike generation"""
         if len(inputs) != len(self.inputs):
             raise RuntimeError("Input size mismatch")
@@ -231,7 +230,7 @@ class RateIZNN(neat.iznn.IZNN):
            self.input_currents[i] = I_min + v * I_max  # Scale input to current range
             
     def advance(self, dt):
-        self.monitor.reset()
+        #self.monitor.reset()
         for n in self.neurons.values():
             n.spike_count = 0
         for o in self.outputs:
@@ -250,7 +249,7 @@ class RateIZNN(neat.iznn.IZNN):
         for t in range(self.simulation_steps):
             self.input_fired.clear()
             self.nowFiring.clear()
-            for i in self.inputs:
+            for i in self.inputs: 
                 #self.input_fired[i] = random.random() < self.input_values[i]
                 self.input_fired[i] = t in input_firing_schedule[i]
 
@@ -264,11 +263,11 @@ class RateIZNN(neat.iznn.IZNN):
                 for j, w in n.inputs:
                     if j in self.inputs:
                         if self.input_fired[j]:
-                            n.current += w
+                            n.current += w * self.input_currents[j]
                     else:
                         ineuron = self.neurons[j]
                         if ineuron is not None:
-                            n.current += ineuron.fired * w
+                            n.current += ineuron.fired * w * 10
 
             # Update hidden neurons
             for i, n in self.neurons.items():
@@ -276,7 +275,7 @@ class RateIZNN(neat.iznn.IZNN):
                     continue
                 #print("Neuron", i)
                 #print(n.current, n.v, n.bias)
-                n.advance(self.dt)
+                n.advance(dt)
                 #print(n.v, n.u, n.fired, n.spike_count, n.current)
                 if n.fired > 0:
                     n.spike_count += 1
@@ -291,12 +290,12 @@ class RateIZNN(neat.iznn.IZNN):
                 for j, w in n.inputs:
                     if j in self.inputs:
                         if self.input_fired[j]:
-                            n.current +=  w
+                            n.current +=  w * self.input_currents[j]
                     else:
                         ineuron = self.neurons[j]
                         #print(ineuron)
                         if ineuron is not None:
-                            n.current += ineuron.fired * w
+                            n.current += ineuron.fired * w * 10
                             #print(ineuron.fired * w)
                             #print(n.current)
 
@@ -304,7 +303,7 @@ class RateIZNN(neat.iznn.IZNN):
             for i in self.outputs:
                 n = self.neurons[i]
                 #print(n.current)
-                n.advance(self.dt)
+                n.advance(dt)
                 #print(n.v, n.u, n.fired, n.spike_count, n.current)
                 if n.fired > 0:
                     #print("OUT SPIKED")
@@ -312,12 +311,13 @@ class RateIZNN(neat.iznn.IZNN):
                     self.nowFiring.add(i)
 
            #print(self.nowFiring)
-            self.monitor.record(self.nowFiring, t)
+            #self.monitor.record(self.nowFiring, t)
 
         #self.monitor.plot_spikes(title="Atividade Neural - CartPole")
+        #print(self.monitor.spike_times)
         #print("Spike counts:", [self.neurons[i].spike_count for i, j in self.neurons.items()])
-        window_time = self.simulation_steps * self.dt
-        return [self.neurons[i].spike_count / window_time for i in self.outputs]
+        ##window_time = self.simulation_steps * self.dt
+        return [self.neurons[i].spike_count for i in self.outputs]
 
 
     @staticmethod

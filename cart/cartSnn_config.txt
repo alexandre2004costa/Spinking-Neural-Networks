@@ -3,7 +3,7 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 100000
-pop_size              = 50
+pop_size              = 150
 reset_on_extinction   = False
 
 [IZGenome]
@@ -104,7 +104,7 @@ compatibility_threshold = 3.0
 
 [DefaultStagnation]
 species_fitness_func = max
-max_stagnation = 20
+max_stagnation = 15
 species_elitism = 2
 
 [DefaultReproduction]

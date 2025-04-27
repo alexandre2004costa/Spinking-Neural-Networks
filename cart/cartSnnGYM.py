@@ -1,4 +1,4 @@
-from neat_iznn import *
+from cart.cartSnn import *
 from cartPole import *
 from rate_iznn import RateIZNN
 import gymnasium as gym

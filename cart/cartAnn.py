@@ -10,7 +10,9 @@ def eval_genome(genome, config):
     state = np.array([0, 0, 0.05, 0])
     
     while True:
-        action = np.argmax(net.activate(state))
+        
+        res = net.activate(state)
+        action = 1 if res[0] > 0.5 else 0
         state = simulate_cartpole(action, state)
         x, _, theta, _ = state
         
@@ -22,10 +24,6 @@ def eval_genome(genome, config):
             break
             
     return fitness
-
-def eval_genomes(genomes, config):
-    for _, genome in genomes:
-        genome.fitness = eval_genome(genome, config)
 
 def visualize_genome(winner, config, generation):
     state = np.array([0, 0, 0.05, 0])
@@ -40,8 +38,8 @@ def visualize_genome(winner, config, generation):
             if event.type == pygame.QUIT:
                 running = False
                 
-        outputs = net.activate(state) 
-        action = np.argmax(outputs)
+        res = net.activate(state)
+        action = 1 if res[0] > 0.5 else 0 # Sigmoid activation func is between 0 and 1
         state = simulate_cartpole(action, state)
         x, _, theta, _ = state
 

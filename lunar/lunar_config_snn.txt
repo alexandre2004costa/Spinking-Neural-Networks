@@ -1,18 +1,18 @@
-#--- parameters for the XOR-2 experiment ---#
+#--- NEAT configuration for LunarLander-v3 with Spiking Neural Network (IZGenome) ---#
 
 [NEAT]
 fitness_criterion     = max
-fitness_threshold     = -110
-pop_size              = 150
+fitness_threshold     = 200
+pop_size              = 50
 reset_on_extinction   = False
 
 [IZGenome]
-# node bias options
-activation_default      = clamped
+# Activation function (tanh for smoother transitions)
+activation_default     = tanh
 activation_mutate_rate = 0.0
-activation_options     = clamped
+activation_options     = tanh
 
-# node bias options
+# Bias options
 bias_init_mean = 0.0
 bias_init_stdev = 1.0
 bias_max_value = 30.0
@@ -21,31 +21,30 @@ bias_mutate_power = 0.5
 bias_mutate_rate = 0.7
 bias_replace_rate = 0.1
 
-# genome compatibility options
+# Genome compatibility
 compatibility_disjoint_coefficient = 1.0
 compatibility_weight_coefficient   = 0.5
 
-# connection add/remove rates
+# Connection add/remove
 conn_add_prob = 0.5
 conn_delete_prob = 0.5
 
-# connection enable options
+# Connection enable
 enabled_default         = True
 enabled_mutate_rate     = 0.01
 
+# Topology
 feed_forward = True 
 initial_connection = full_direct
+node_add_prob = 0.2
+node_delete_prob = 0.2
 
-# node add/remove rates
-node_add_prob           = 0.2
-node_delete_prob        = 0.2
+# Network parameters
+num_inputs   = 8
+num_outputs  = 4
+num_hidden   = 0
 
-# network parameters
-num_hidden              = 4
-num_inputs              = 2
-num_outputs             = 3
-
-# node parameters for regular spiking
+# Izhikevich RS neuron parameters
 a_init_mean      = 0.02
 a_init_stdev     = 0.0
 a_max_value      = 30.0
@@ -78,23 +77,22 @@ d_mutate_power   = 0.0
 d_mutate_rate    = 0.0
 d_replace_rate   = 0.0
 
-# connection weight options
-weight_init_mean = 20.0         
-weight_init_stdev = 2.0          
-weight_max_value = 50.0          
-weight_min_value = -50.0         
-weight_mutate_power = 1.0        
-weight_mutate_rate = 0.8
-weight_replace_rate = 0.1
+# Weight options
+weight_init_mean       = 0.0
+weight_init_stdev      = 1.0
+weight_max_value       = 30.0
+weight_min_value       = -30.0
+weight_mutate_power    = 1.0
+weight_mutate_rate     = 0.8
+weight_replace_rate    = 0.1
 
 [DefaultSpeciesSet]
 compatibility_threshold = 3.0
 
 [DefaultStagnation]
 species_fitness_func = max
-max_stagnation = 15
-species_elitism = 1
-
+max_stagnation = 20
+species_elitism = 2
 
 [DefaultReproduction]
 elitism = 2 

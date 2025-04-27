@@ -46,5 +46,5 @@ def run(config_values, simulateFunc, config_file, guiFunc, num_Generations=50):
         eval_genome(config_values["I_min"], config_values["I_diff"], config_values["background"], simulateFunc, genomes, config)
     
     winner = pop.run(eval_genome_wrapper, num_Generations)
-    print(winner)
-    guiFunc(winner, config, config_values["I_min"], config_values["I_diff"], config_values["background"], generation_reached)
+    #print(winner)
+    #guiFunc(winner, config, config_values["I_min"], config_values["I_diff"], config_values["background"], generation_reached)

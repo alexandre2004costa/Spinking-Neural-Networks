@@ -1,13 +1,13 @@
 [NEAT]
 fitness_criterion     = max
-fitness_threshold     = 90.0
-pop_size              = 50
+fitness_threshold     = 200.0
+pop_size              = 150
 reset_on_extinction   = False
 
 [DefaultGenome]
-num_inputs             = 2
-num_outputs            = 1
-num_hidden             = 0
+num_inputs             = 8      
+num_outputs            = 4      
+num_hidden             = 8      
 
 initial_connection     = full
 feed_forward           = True

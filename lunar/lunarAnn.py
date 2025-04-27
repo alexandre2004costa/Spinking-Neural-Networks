@@ -9,21 +9,17 @@ def simulate(genome, config, num_trials=5):
     trials_reward = []
     
     for trial in range(num_trials):
-        env = gym.make("MountainCarContinuous-v0", render_mode=None)
+        env = gym.make("LunarLander-v3", render_mode=None)
         state, _ = env.reset()
         total_reward = 0
         steps = 0
         done = False
         
         while not done:
-            normalized_state = (state - env.observation_space.low) / (
-                env.observation_space.high - env.observation_space.low
-            )
-            output = net.activate(normalized_state)
-            action = np.clip(output[0], -1.0, 1.0)
+            output = net.activate(state)  
+            action = np.argmax(output)   
             
-            state, reward, terminated, truncated, _ = env.step([action])  
-            
+            state, reward, terminated, truncated, _ = env.step(action)
             total_reward += reward
             steps += 1
             done = terminated or truncated or steps >= 1000
@@ -38,33 +34,31 @@ def simulate(genome, config, num_trials=5):
     return avg_reward
 
 def gui(winner, config, generation_reached):
-    env = gym.make("MountainCarContinuous-v0", render_mode="human")
+    env = gym.make("LunarLander-v3", render_mode="human")
     state, _ = env.reset()
     net = neat.nn.FeedForwardNetwork.create(winner, config)
     
     episode = 0
     steps = 0
+    total_reward = 0
     
     while episode < 5:
-        normalized_state = (state - env.observation_space.low) / (
-            env.observation_space.high - env.observation_space.low
-        )
+        output = net.activate(state)
+        action = np.argmax(output)
         
-        output = net.activate(normalized_state)
-        action = np.clip(output[0], -1.0, 1.0)
-        
-        state, reward, terminated, truncated, _ = env.step([action])
+        state, reward, terminated, truncated, _ = env.step(action)
         steps += 1
+        total_reward += reward
         
         env.render()
         if hasattr(env, 'window') and hasattr(env.window, 'window_surface_v2'):
-            text = f"Generation: {generation_reached}, Episode: {episode}, Steps: {steps}"
-            position, velocity = state
-            text += f"\nPos: {position:.2f}, Vel: {velocity:.2f}, Action: {action:.2f}"
+            text = f"Generation: {generation_reached}, Episode: {episode}"
+            text += f"\nSteps: {steps}, Reward: {total_reward:.2f}"
         
         if terminated or truncated or steps >= 1000:
             episode += 1
             steps = 0
+            total_reward = 0
             state, _ = env.reset()
             time.sleep(1)
     
@@ -95,13 +89,13 @@ def run_neat(config_file):
     stats = neat.StatisticsReporter()
     pop.add_reporter(stats)
     
-    #pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome_parallel)
+    pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome_parallel)
     
-    winner = pop.run(eval_genomes, 100)
+    winner = pop.run(pe.evaluate, 1000)
     
     #print('\nBest genome:\n{!s}'.format(winner))
     
-    #gui(winner, config, generation_reached)
+    gui(winner, config, generation_reached)
     
 if __name__ == '__main__':
-    run_neat("car/mountain_config_ann.txt")
+    run_neat("lunar/lunar_config_ann.txt")

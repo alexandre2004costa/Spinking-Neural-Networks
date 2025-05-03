@@ -1,82 +1,99 @@
-import neat
+import gymnasium as gym
 import numpy as np
-import time
 from rate_iznn import RateIZNN
 import multiprocessing
-from cartPole import *
+import time
+
 
 def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     norm_state = (state - min_vals) / (max_vals - min_vals)
     I_values = I_min + norm_state * (I_max - I_min)
     return I_values
 
-def decode_output(firing_rate, threshold=0.0):
-    return 1 if firing_rate > threshold else 0
-
-def simulate(genome, config):
-    net = RateIZNN.create(genome, config)  
-    state = np.array([0, 0, 0.05, 0])
-    steps_balanced = 0
-
-    while True:
-        input_values = encode_input(state, min_vals, max_vals, 0, 1)
-        net.set_inputs(input_values)
-
-        output = net.advance(0.02)     
-        #print(output)
-        action = decode_output(output[0])
-        #print(action)
-        state = simulate_cartpole(action, state)
-        x, _, theta, _ = state
-        
-        if abs(x) > position_limit or abs(theta) > angle_limit:
-            break
-        
-        steps_balanced += 1
-        
-        if steps_balanced >= 100000:
-            break
+def decode_output(firing_rates, threshold=0.3):
+    # 0: empurrar para esquerda, 1: não empurrar, 2: empurrar para direita
+    action = np.argmax(firing_rates)
     
-    return steps_balanced
+    # Se nenhum neurônio estiver disparando acima do limiar, escolha a ação padrão (não empurrar)
+    if max(firing_rates) < threshold:
+        return 1
+    
+    return action
+
+def simulate(genome, config, num_trials=5):
+    trials_reward = []
+    
+    for _ in range(num_trials):
+        net = RateIZNN.create(genome, config)   
+        env = gym.make("MountainCar-v0", render_mode=None)
+        state, _ = env.reset()
+        
+        total_reward = 0
+        steps = 0
+        done = False
+        
+        while not done:
+            input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
+            net.set_inputs(input_values)
+
+            output = net.advance(0.02)
+            print(output)
+            action = decode_output(output[0])
+            state, reward, terminated, truncated, _ = env.step(action)  
+            
+            total_reward += reward
+            steps += 1
+            done = terminated or truncated or steps >= 1000
+        
+        env.close()
+        trials_reward.append(float(total_reward))
+    
+    avg_reward = sum(trials_reward) / num_trials
+    if np.isnan(avg_reward) or np.isinf(avg_reward):
+        return 0.0
+    
+    return avg_reward
 
 def eval_single_genome(genome, config):
     genome.fitness = simulate(genome, config)
     return genome.fitness 
 
 def gui(winner, config, I_min, I_diff, I_background, generation_reached):
-    state = np.array([0, 0, 0.05, 0])
-    net = RateIZNN.create(winner, config)  
-    running = True
-    pygame.init()
-    screen = pygame.display.set_mode((screen_width, screen_height))
-    clock = pygame.time.Clock()
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        input_values = encode_input(state, min_vals, max_vals, 0, 1)
+    env = gym.make("MountainCar-v0", render_mode="human")
+    state, _ = env.reset()
+    net = RateIZNN.create(winner, config)
+    
+    episode = 0
+    steps = 0
+    
+    while episode < 5:
+        input_values = encode_input(state, env.observation_space.low, 
+                                env.observation_space.high, I_min, I_min + I_diff)
         net.set_inputs(input_values)
 
         for neuron in net.neurons.values():
-            neuron.current += I_background
-        for value in net.input_values:
-            value += I_background
+            neuron.v += I_background
 
-        output = net.advance(0.02)     
-        state = simulate_cartpole(output[0], state)
-        x, _, theta, _ = state
+        output = net.advance(0.02)
+        action = np.clip(output[0], -1.0, 1.0)
         
-        if abs(x) > position_limit or abs(theta) > angle_limit:
-            net = RateIZNN.create(winner, config)  
-            state = np.array([0, 0, 0.05, 0])
+        state, _, terminated, truncated, _ = env.step([action])
+        steps += 1
+        
+        env.render()
+        if hasattr(env, 'window') and hasattr(env.window, 'window_surface_v2'):
+            text = f"Generation: {generation_reached}, Episode: {episode}, Steps: {steps}"
+            position, velocity = state
+            text += f"\nPos: {position:.2f}, Vel: {velocity:.2f}, Action: {action:.2f}"
+        
+        if terminated or truncated or steps >= 1000:
+            episode += 1
+            steps = 0
+            state, _ = env.reset()
+            net = RateIZNN.create(winner, config)
             time.sleep(1)
-
-        draw_cartpole(screen, state, generation_reached, 0, 0, "")
-
-        clock.tick(50)
-    pygame.quit()
+    
+    env.close()
 
 def run(config_values, config_file, num_Generations=50):  
 
@@ -125,4 +142,4 @@ if __name__ == "__main__":
     'weight_mutate_power': 2.0,
     'weight_mutate_rate': 0.76,
     'weight_replace_rate': 0.2}
-        , "cart/cartSnn_config.txt", 50)
+        , "mountain_car/mountain_config_snn.txt", 50)

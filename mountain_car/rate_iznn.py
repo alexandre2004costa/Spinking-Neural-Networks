@@ -1,7 +1,6 @@
 import neat
 import numpy as np
 import random
-from spike_monitor import *
 
 class RateIZNN(neat.iznn.IZNN):
     def __init__(self, neurons, inputs, outputs, connections):
@@ -69,6 +68,7 @@ class RateIZNN(neat.iznn.IZNN):
             for i in self.receiving_conn:
                 self.receiving_conn[i] = 0
 
+        
         return [self.neurons[i].spike_count for i in self.outputs]
 
     @staticmethod

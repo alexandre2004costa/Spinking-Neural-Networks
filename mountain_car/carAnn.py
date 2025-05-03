@@ -4,12 +4,23 @@ import neat
 import time
 import multiprocessing
 
-def simulate(genome, config, num_trials=5):
+
+def decode_output(firing_rates, threshold=0.3):
+    # 0: empurrar para esquerda, 1: não empurrar, 2: empurrar para direita
+    action = np.argmax(firing_rates)
+    
+    # Se nenhum neurônio estiver disparando acima do limiar, escolha a ação padrão (não empurrar)
+    if max(firing_rates) < threshold:
+        return 1
+    
+    return action
+    
+def simulate(genome, config, num_trials=10):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     trials_reward = []
     
     for trial in range(num_trials):
-        env = gym.make("MountainCarContinuous-v0", render_mode=None)
+        env = gym.make("MountainCar-v0", render_mode=None)
         state, _ = env.reset()
         total_reward = 0
         steps = 0
@@ -20,9 +31,9 @@ def simulate(genome, config, num_trials=5):
                 env.observation_space.high - env.observation_space.low
             )
             output = net.activate(normalized_state)
-            action = np.clip(output[0], -1.0, 1.0)
+            action = decode_output(output)
             
-            state, reward, terminated, truncated, _ = env.step([action])  
+            state, reward, terminated, truncated, _ = env.step(action)  
             
             total_reward += reward
             steps += 1
@@ -38,44 +49,44 @@ def simulate(genome, config, num_trials=5):
     return avg_reward
 
 def gui(winner, config, generation_reached):
-    env = gym.make("MountainCarContinuous-v0", render_mode="human")
+    env = gym.make("MountainCar-v0", render_mode="human")
     state, _ = env.reset()
     net = neat.nn.FeedForwardNetwork.create(winner, config)
     
     episode = 0
     steps = 0
+    max_episodes = 10
     
-    while episode < 5:
+    while episode < max_episodes:
         normalized_state = (state - env.observation_space.low) / (
             env.observation_space.high - env.observation_space.low
         )
         
         output = net.activate(normalized_state)
-        action = np.clip(output[0], -1.0, 1.0)
+        action = decode_output(output)
         
-        state, reward, terminated, truncated, _ = env.step([action])
+        state, reward, terminated, truncated, _ = env.step(action)
         steps += 1
-        
-        env.render()
+
         if hasattr(env, 'window') and hasattr(env.window, 'window_surface_v2'):
-            text = f"Generation: {generation_reached}, Episode: {episode}, Steps: {steps}"
+            text = f"Generation: {generation_reached}, Episode: {episode+1}/{max_episodes}, Steps: {steps}"
             position, velocity = state
-            text += f"\nPos: {position:.2f}, Vel: {velocity:.2f}, Action: {action:.2f}"
+            text += f"\nPos: {position:.2f}, Vel: {velocity:.2f}, Action: {action}"
+
         
+
         if terminated or truncated or steps >= 1000:
+            if state[0] >= 0.5:
+                print(f"Episódio {episode+1}: Sucesso! Alcançou o topo em {steps} passos.")
+            else:
+                print(f"Episódio {episode+1}: Falha. Posição máxima: {state[0]:.2f}")
+            
             episode += 1
             steps = 0
             state, _ = env.reset()
             time.sleep(1)
     
     env.close()
-
-def eval_genome_parallel(genome, config):
-    return simulate(genome, config)
-
-def eval_genomes(genomes, config):
-    for _, genome in genomes:
-        genome.fitness = simulate(genome, config)
 
 def run_neat(config_file):
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -95,13 +106,12 @@ def run_neat(config_file):
     stats = neat.StatisticsReporter()
     pop.add_reporter(stats)
     
-    #pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome_parallel)
+    pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), simulate)
     
-    winner = pop.run(eval_genomes, 100)
+    winner = pop.run(pe.evaluate, 100)
+    print('\nBest genome:\n{!s}'.format(winner))
     
-    #print('\nBest genome:\n{!s}'.format(winner))
-    
-    #gui(winner, config, generation_reached)
+    gui(winner, config, generation_reached)
     
 if __name__ == '__main__':
-    run_neat("car/mountain_config_ann.txt")
+    run_neat("mountain_car/mountain_config_ann.txt")

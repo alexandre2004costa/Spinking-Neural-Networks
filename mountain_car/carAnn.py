@@ -19,7 +19,7 @@ def simulate(genome, config, num_trials=10):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     trials_reward = []
     
-    for trial in range(num_trials):
+    for _ in range(num_trials):
         env = gym.make("MountainCar-v0", render_mode=None)
         state, _ = env.reset()
         total_reward = 0

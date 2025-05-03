@@ -2,7 +2,7 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = -110
-pop_size              = 100
+pop_size              = 50
 reset_on_extinction   = False
 
 [IZGenome]
@@ -25,8 +25,8 @@ compatibility_disjoint_coefficient = 1.0
 compatibility_weight_coefficient   = 0.5
 
 # connection add/remove rates
-conn_add_prob = 0.1
-conn_delete_prob = 0.1
+conn_add_prob = 0.3
+conn_delete_prob = 0.3
 
 # connection enable options
 enabled_default         = True
@@ -36,13 +36,13 @@ feed_forward = True
 initial_connection = full_direct
 
 # node add/remove rates
-node_add_prob           = 0.03
-node_delete_prob        = 0.03
+node_add_prob           = 0.1
+node_delete_prob        = 0.1
 
 # network parameters
 num_inputs             = 2
 num_outputs            = 3
-num_hidden             = 4
+num_hidden             = 0
 
 # node parameters for regular spiking
 a_init_mean      = 0.02

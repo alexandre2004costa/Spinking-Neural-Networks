@@ -3,6 +3,7 @@ import numpy as np
 from rate_iznn import RateIZNN
 import multiprocessing
 import time
+import neat
 
 
 def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
@@ -15,12 +16,12 @@ def decode_output(firing_rates, threshold=0.3):
     action = np.argmax(firing_rates)
     
     # Se nenhum neurônio estiver disparando acima do limiar, escolha a ação padrão (não empurrar)
-    if max(firing_rates) < threshold:
-        return 1
+    #if max(firing_rates) < threshold:
+    #    return 1
     
     return action
 
-def simulate(genome, config, num_trials=5):
+def simulate(genome, config, num_trials=10):
     trials_reward = []
     
     for _ in range(num_trials):
@@ -37,8 +38,8 @@ def simulate(genome, config, num_trials=5):
             net.set_inputs(input_values)
 
             output = net.advance(0.02)
-            print(output)
-            action = decode_output(output[0])
+            #print(output)
+            action = decode_output(output)
             state, reward, terminated, truncated, _ = env.step(action)  
             
             total_reward += reward
@@ -66,27 +67,25 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
     episode = 0
     steps = 0
     
-    while episode < 5:
-        input_values = encode_input(state, env.observation_space.low, 
-                                env.observation_space.high, I_min, I_min + I_diff)
+    while episode < 10:
+        input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
         net.set_inputs(input_values)
-
-        for neuron in net.neurons.values():
-            neuron.v += I_background
-
         output = net.advance(0.02)
-        action = np.clip(output[0], -1.0, 1.0)
-        
-        state, _, terminated, truncated, _ = env.step([action])
+        action = decode_output(output)
+        state, reward, terminated, truncated, _ = env.step(action)  
         steps += 1
         
-        env.render()
         if hasattr(env, 'window') and hasattr(env.window, 'window_surface_v2'):
-            text = f"Generation: {generation_reached}, Episode: {episode}, Steps: {steps}"
+            text = f"Generation: {generation_reached}, Episode: {episode+1}/{10}, Steps: {steps}"
             position, velocity = state
-            text += f"\nPos: {position:.2f}, Vel: {velocity:.2f}, Action: {action:.2f}"
-        
+            text += f"\nPos: {position:.2f}, Vel: {velocity:.2f}, Action: {action}"
+
         if terminated or truncated or steps >= 1000:
+            if state[0] >= 0.5:
+                print(f"Episódio {episode+1}: Sucesso! Alcançou o topo em {steps} passos.")
+            else:
+                print(f"Episódio {episode+1}: Falha. Posição máxima: {state[0]:.2f}")
+            
             episode += 1
             steps = 0
             state, _ = env.reset()

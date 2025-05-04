@@ -5,7 +5,7 @@ from rate_iznn import RateIZNN
 import multiprocessing
 from cartPole import *
 
-def encode_input(state, min_vals, max_vals, I_min=20.0, I_max=100.0):
+def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     norm_state = (state - min_vals) / (max_vals - min_vals)
     I_values = I_min + norm_state * (I_max - I_min)
     return I_values
@@ -78,7 +78,7 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
         clock.tick(50)
     pygame.quit()
 
-def run(config_values, config_file, num_Generations=50):  # <-- adicionei num_workers
+def run(config_values, config_file, num_Generations=50):  
 
     config = neat.Config(neat.iznn.IZGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,

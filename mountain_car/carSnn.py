@@ -1,33 +1,41 @@
 import gymnasium as gym
 import numpy as np
-from neat_iznn import *
-import time
+from rate_iznn import RateIZNN
 import multiprocessing
+import time
 import neat
 
 
-def simulate(genome, config, num_trials=6):
+def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
+    norm_state = (state - min_vals) / (max_vals - min_vals)
+    I_values = I_min + norm_state * (I_max - I_min)
+    return I_values
+
+def decode_output(firing_rates):
+    action = np.argmax(firing_rates)
+    return action
+
+def simulate(genome, config, num_trials=10):
     trials_reward = []
     
     for _ in range(num_trials):
-        net = RateIZNN.create(genome, config)  
-        env = gym.make("LunarLander-v3", render_mode=None)
+        net = RateIZNN.create(genome, config)   
+        env = gym.make("MountainCar-v0", render_mode=None)
         state, _ = env.reset()
         
         total_reward = 0
         steps = 0
         done = False
-          
-
+        
         while not done:
             input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
             net.set_inputs(input_values)
 
             output = net.advance(0.02)
             #print(output)
-            action = np.argmax(output)  
-
-            state, reward, terminated, truncated, _ = env.step(action)
+            action = decode_output(output)
+            state, reward, terminated, truncated, _ = env.step(action)  
+            
             total_reward += reward
             steps += 1
             done = terminated or truncated or steps >= 1000
@@ -41,45 +49,44 @@ def simulate(genome, config, num_trials=6):
     
     return avg_reward
 
+def eval_single_genome(genome, config):
+    genome.fitness = simulate(genome, config)
+    return genome.fitness 
+
 def gui(winner, config, generation_reached):
-    env = gym.make("LunarLander-v3", render_mode="human")
+    env = gym.make("MountainCar-v0", render_mode="human")
     state, _ = env.reset()
     net = RateIZNN.create(winner, config)
     
     episode = 0
     steps = 0
-    total_reward = 0
     
     while episode < 10:
         input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
         net.set_inputs(input_values)
-
-        spike_counts = net.advance(0.2)
-        action = np.argmax(spike_counts)  
-
-        state, reward, terminated, truncated, _ = env.step(action)
-        total_reward += reward
+        output = net.advance(0.02)
+        action = decode_output(output)
+        state, reward, terminated, truncated, _ = env.step(action)  
         steps += 1
         
-        env.render()
         if hasattr(env, 'window') and hasattr(env.window, 'window_surface_v2'):
-            text = f"Generation: {generation_reached}, Episode: {episode}"
-            text += f"\nSteps: {steps}, Reward: {total_reward:.2f}"
-        
+            text = f"Generation: {generation_reached}, Episode: {episode+1}/{10}, Steps: {steps}"
+            position, velocity = state
+            text += f"\nPos: {position:.2f}, Vel: {velocity:.2f}, Action: {action}"
+
         if terminated or truncated or steps >= 1000:
-            print(f"Episódio {episode+1} terminado com recompensa total: {total_reward:.2f}")
+            if state[0] >= 0.5:
+                print(f"Episódio {episode+1}: Sucesso! Alcançou o topo em {steps} passos.")
+            else:
+                print(f"Episódio {episode+1}: Falha. Posição máxima: {state[0]:.2f}")
+            
             episode += 1
             steps = 0
-            total_reward = 0
             state, _ = env.reset()
             net = RateIZNN.create(winner, config)
             time.sleep(1)
     
     env.close()
-
-def eval_single_genome(genome, config):
-    genome.fitness = simulate(genome, config)
-    return genome.fitness 
 
 def run(config_file, num_Generations=50):  
 
@@ -111,5 +118,6 @@ def run(config_file, num_Generations=50):
     print(winner)
     gui(winner, config, generation_reached)
 
+
 if __name__ == "__main__":
-    run("lunar/lunar_config_snn.txt", 100)
+    run("mountain_car/mountain_config_snn.txt", 50)

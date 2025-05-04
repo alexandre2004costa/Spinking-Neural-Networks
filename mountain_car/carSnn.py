@@ -11,14 +11,8 @@ def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     I_values = I_min + norm_state * (I_max - I_min)
     return I_values
 
-def decode_output(firing_rates, threshold=0.3):
-    # 0: empurrar para esquerda, 1: não empurrar, 2: empurrar para direita
+def decode_output(firing_rates):
     action = np.argmax(firing_rates)
-    
-    # Se nenhum neurônio estiver disparando acima do limiar, escolha a ação padrão (não empurrar)
-    #if max(firing_rates) < threshold:
-    #    return 1
-    
     return action
 
 def simulate(genome, config, num_trials=10):
@@ -59,7 +53,7 @@ def eval_single_genome(genome, config):
     genome.fitness = simulate(genome, config)
     return genome.fitness 
 
-def gui(winner, config, I_min, I_diff, I_background, generation_reached):
+def gui(winner, config, generation_reached):
     env = gym.make("MountainCar-v0", render_mode="human")
     state, _ = env.reset()
     net = RateIZNN.create(winner, config)
@@ -94,7 +88,7 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
     
     env.close()
 
-def run(config_values, config_file, num_Generations=50):  
+def run(config_file, num_Generations=50):  
 
     config = neat.Config(neat.iznn.IZGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -104,14 +98,6 @@ def run(config_values, config_file, num_Generations=50):
         return RateIZNN.create(genome, config)
 
     neat.iznn.IZGenome.create_phenotype = create_phenotype
-
-    config.genome_config.weight_init_mean = config_values["weight_init_mean"]
-    config.genome_config.weight_init_stdev = config_values["weight_init_stdev"]
-    config.genome_config.weight_max_value = config_values["weight_max_value"]
-    config.genome_config.weight_min_value = config_values["weight_min_value"]
-    config.genome_config.weight_mutate_power = config_values["weight_mutate_power"]
-    config.genome_config.weight_mutate_rate = config_values["weight_mutate_rate"]
-    config.genome_config.weight_replace_rate = config_values["weight_replace_rate"]
 
     pop = neat.population.Population(config)
     generation_reached = 0
@@ -130,15 +116,8 @@ def run(config_values, config_file, num_Generations=50):
     winner = pop.run(pe.evaluate, num_Generations)
 
     print(winner)
-    gui(winner, config, config_values["I_min"], config_values["I_diff"], config_values["background"], generation_reached)
+    gui(winner, config, generation_reached)
 
 
 if __name__ == "__main__":
-    run({'I_min': -185.20966099570762, 'I_diff': 471, 'background': 50.3531840776152606,'weight_init_mean': 2.0,
-    'weight_init_stdev': 2.0,
-    'weight_max_value': 30.0,
-    'weight_min_value': -20.0,
-    'weight_mutate_power': 2.0,
-    'weight_mutate_rate': 0.76,
-    'weight_replace_rate': 0.2}
-        , "mountain_car/mountain_config_snn.txt", 50)
+    run("mountain_car/mountain_config_snn.txt", 50)

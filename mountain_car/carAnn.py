@@ -5,14 +5,8 @@ import time
 import multiprocessing
 
 
-def decode_output(firing_rates, threshold=0.3):
-    # 0: empurrar para esquerda, 1: não empurrar, 2: empurrar para direita
+def decode_output(firing_rates):
     action = np.argmax(firing_rates)
-    
-    # Se nenhum neurônio estiver disparando acima do limiar, escolha a ação padrão (não empurrar)
-    if max(firing_rates) < threshold:
-        return 1
-    
     return action
     
 def simulate(genome, config, num_trials=10):

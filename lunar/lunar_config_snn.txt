@@ -3,11 +3,10 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 200
-pop_size              = 50
+pop_size              = 150
 reset_on_extinction   = False
 
 [IZGenome]
-# Activation function (tanh for smoother transitions)
 activation_default     = tanh
 activation_mutate_rate = 0.0
 activation_options     = tanh
@@ -26,72 +25,71 @@ compatibility_disjoint_coefficient = 1.0
 compatibility_weight_coefficient   = 0.5
 
 # Connection add/remove
-conn_add_prob = 0.5
-conn_delete_prob = 0.5
+conn_add_prob = 0.3
+conn_delete_prob = 0.3
 
 # Connection enable
 enabled_default         = True
 enabled_mutate_rate     = 0.01
 
-# Topology
+
 feed_forward = True 
 initial_connection = full_direct
-node_add_prob = 0.2
-node_delete_prob = 0.2
+
+node_add_prob = 0.1
+node_delete_prob = 0.1
 
 # Network parameters
 num_inputs   = 8
 num_outputs  = 4
-num_hidden   = 0
+num_hidden   = 2
 
-# Izhikevich RS neuron parameters
 a_init_mean      = 0.02
-a_init_stdev     = 0.0
-a_max_value      = 30.0
-a_min_value      = -30.0
-a_mutate_power   = 0.0
-a_mutate_rate    = 0.0
-a_replace_rate   = 0.0
+a_init_stdev     = 0.002
+a_max_value      = 0.1
+a_min_value      = 0.01
+a_mutate_power   = 0.002
+a_mutate_rate    = 0.2
+a_replace_rate   = 0.1
 
 b_init_mean      = 0.2
-b_init_stdev     = 0.0
-b_max_value      = 30.0
-b_min_value      = -30.0
-b_mutate_power   = 0.0
-b_mutate_rate    = 0.0
-b_replace_rate   = 0.0
+b_init_stdev     = 0.02
+b_max_value      = 0.3
+b_min_value      = 0.1
+b_mutate_power   = 0.02
+b_mutate_rate    = 0.2
+b_replace_rate   = 0.1
 
 c_init_mean      = -50.0
-c_init_stdev     = 0.0
-c_max_value      = 30.0
-c_min_value      = -30.0
-c_mutate_power   = 0.0
-c_mutate_rate    = 0.0
-c_replace_rate   = 0.0
+c_init_stdev     = 5.0
+c_max_value      = -60.0
+c_min_value      = -70.0
+c_mutate_power   = 0.5
+c_mutate_rate    = 0.2
+c_replace_rate   = 0.1
 
 d_init_mean      = 2.0
-d_init_stdev     = 0.0
-d_max_value      = 30.0
-d_min_value      = -30.0
-d_mutate_power   = 0.0
-d_mutate_rate    = 0.0
-d_replace_rate   = 0.0
-
+d_init_stdev     = 2.0
+d_max_value      = 10.0
+d_min_value      = 6.0
+d_mutate_power   = 0.2
+d_mutate_rate    = 0.2
+d_replace_rate   = 0.1
 # Weight options
-weight_init_mean       = 0.0
-weight_init_stdev      = 1.0
-weight_max_value       = 30.0
-weight_min_value       = -30.0
-weight_mutate_power    = 1.0
-weight_mutate_rate     = 0.8
-weight_replace_rate    = 0.1
+weight_init_mean = 2.0         
+weight_init_stdev = 2.0          
+weight_max_value = 30.0          
+weight_min_value = -20.0         
+weight_mutate_power = 2.0        
+weight_mutate_rate = 0.76
+weight_replace_rate = 0.2
 
 [DefaultSpeciesSet]
 compatibility_threshold = 3.0
 
 [DefaultStagnation]
 species_fitness_func = max
-max_stagnation = 20
+max_stagnation = 15
 species_elitism = 2
 
 [DefaultReproduction]

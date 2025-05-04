@@ -101,10 +101,8 @@ def run_neat(config_file):
     pop.add_reporter(stats)
     
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), simulate)
-    
     winner = pop.run(pe.evaluate, 100)
     print('\nBest genome:\n{!s}'.format(winner))
-    
     gui(winner, config, generation_reached)
     
 if __name__ == '__main__':

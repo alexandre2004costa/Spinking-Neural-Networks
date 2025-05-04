@@ -2,9 +2,11 @@ import gymnasium as gym
 import numpy as np
 from neat_iznn import *
 import time
+import multiprocessing
+import neat
 
 
-def simulate(I_min, I_diff, I_background, genome, config, num_trials=15):
+def simulate(genome, config, num_trials=6):
     trials_reward = []
     
     for _ in range(num_trials):
@@ -18,13 +20,12 @@ def simulate(I_min, I_diff, I_background, genome, config, num_trials=15):
           
 
         while not done:
-            input_values = encode_input(state, env.observation_space.low, 
-                                        env.observation_space.high, 0, 1)
+            input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
             net.set_inputs(input_values)
 
-            spike_counts = net.advance(0.02)
-            # print(spike_counts)
-            action = np.argmax(spike_counts)  
+            output = net.advance(0.02)
+            #print(output)
+            action = np.argmax(output)  
 
             state, reward, terminated, truncated, _ = env.step(action)
             total_reward += reward
@@ -40,7 +41,7 @@ def simulate(I_min, I_diff, I_background, genome, config, num_trials=15):
     
     return avg_reward
 
-def gui(winner, config, I_min, I_diff, I_background, generation_reached):
+def gui(winner, config, generation_reached):
     env = gym.make("LunarLander-v3", render_mode="human")
     state, _ = env.reset()
     net = RateIZNN.create(winner, config)
@@ -49,9 +50,8 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
     steps = 0
     total_reward = 0
     
-    while episode < 5:
-        input_values = encode_input(state, env.observation_space.low, 
-                                        env.observation_space.high, 0, 1)
+    while episode < 10:
+        input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
         net.set_inputs(input_values)
 
         spike_counts = net.advance(0.2)
@@ -60,13 +60,14 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
         state, reward, terminated, truncated, _ = env.step(action)
         total_reward += reward
         steps += 1
-        done = terminated or truncated or steps >= 1000
         
         env.render()
         if hasattr(env, 'window') and hasattr(env.window, 'window_surface_v2'):
-            text = f"Gen: {generation_reached}, Ep: {episode}, Steps: {steps}, Reward: {total_reward:.1f}"
+            text = f"Generation: {generation_reached}, Episode: {episode}"
+            text += f"\nSteps: {steps}, Reward: {total_reward:.2f}"
         
         if terminated or truncated or steps >= 1000:
+            print(f"Episódio {episode+1} terminado com recompensa total: {total_reward:.2f}")
             episode += 1
             steps = 0
             total_reward = 0
@@ -76,15 +77,39 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
     
     env.close()
 
-config_values = {'I_min': -185.0, 
-                'I_diff': 471, 
-                'background': 10.0, 
-                'weight_init_mean': 15.0,
-                'weight_init_stdev': 2.7, 
-                'weight_max_value': 48.0,
-                'weight_min_value': -53.0, 
-                'weight_mutate_power': 1.3, 
-                'weight_mutate_rate': 0.76,
-                'weight_replace_rate': 0.14}
+def eval_single_genome(genome, config):
+    genome.fitness = simulate(genome, config)
+    return genome.fitness 
 
-run(config_values, simulate, "lunar/lunar_config_snn.txt", gui, 100)
+def run(config_file, num_Generations=50):  
+
+    config = neat.Config(neat.iznn.IZGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         config_file)
+
+    def create_phenotype(genome):
+        return RateIZNN.create(genome, config)
+
+    neat.iznn.IZGenome.create_phenotype = create_phenotype
+
+    pop = neat.population.Population(config)
+    generation_reached = 0
+
+    class GenerationReporter(neat.reporting.BaseReporter):
+        def start_generation(self, generation):
+            nonlocal generation_reached
+            generation_reached = generation
+
+    pop.add_reporter(GenerationReporter())
+    pop.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    pop.add_reporter(stats)
+
+    pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_single_genome)
+    winner = pop.run(pe.evaluate, num_Generations)
+
+    print(winner)
+    gui(winner, config, generation_reached)
+
+if __name__ == "__main__":
+    run("lunar/lunar_config_snn.txt", 100)

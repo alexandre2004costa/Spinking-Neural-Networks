@@ -4,7 +4,7 @@ import neat
 import time
 import multiprocessing
 
-def simulate(genome, config, num_trials=5):
+def simulate(genome, config, num_trials=7):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     trials_reward = []
     
@@ -42,7 +42,7 @@ def gui(winner, config, generation_reached):
     steps = 0
     total_reward = 0
     
-    while episode < 5:
+    while episode < 10:
         output = net.activate(state)
         action = np.argmax(output)
         
@@ -56,6 +56,7 @@ def gui(winner, config, generation_reached):
             text += f"\nSteps: {steps}, Reward: {total_reward:.2f}"
         
         if terminated or truncated or steps >= 1000:
+            print(f"Episódio {episode+1} terminado com recompensa total: {total_reward:.2f}")
             episode += 1
             steps = 0
             total_reward = 0
@@ -63,13 +64,6 @@ def gui(winner, config, generation_reached):
             time.sleep(1)
     
     env.close()
-
-def eval_genome_parallel(genome, config):
-    return simulate(genome, config)
-
-def eval_genomes(genomes, config):
-    for _, genome in genomes:
-        genome.fitness = simulate(genome, config)
 
 def run_neat(config_file):
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -89,12 +83,9 @@ def run_neat(config_file):
     stats = neat.StatisticsReporter()
     pop.add_reporter(stats)
     
-    pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome_parallel)
-    
-    winner = pop.run(pe.evaluate, 1000)
-    
-    #print('\nBest genome:\n{!s}'.format(winner))
-    
+    pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), simulate)
+    winner = pop.run(pe.evaluate, 100)
+    print('\nBest genome:\n{!s}'.format(winner))
     gui(winner, config, generation_reached)
     
 if __name__ == '__main__':

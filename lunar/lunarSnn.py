@@ -1,12 +1,16 @@
 import gymnasium as gym
-import numpy as np
-from neat_iznn import *
+from rate_iznn import *
 import time
 import multiprocessing
 import neat
+import numpy as np
 
+def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
+    norm_state = (state - min_vals) / (max_vals - min_vals)
+    I_values = I_min + norm_state * (I_max - I_min)
+    return I_values
 
-def simulate(genome, config, num_trials=6):
+def simulate(genome, config, num_trials=10):
     trials_reward = []
     
     for _ in range(num_trials):
@@ -51,7 +55,7 @@ def gui(winner, config, generation_reached):
     total_reward = 0
     
     while episode < 10:
-        input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
+        input_values = encode_input(state, env.observation_space.low, env.observation_space.high, 0, 1)
         net.set_inputs(input_values)
 
         spike_counts = net.advance(0.2)

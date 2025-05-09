@@ -10,12 +10,11 @@ class RateIZNN(neat.iznn.IZNN):
         self.input_currents = {} 
         self.input_fired = {} 
         self.connections = connections
-        #self.monitor = SpikeMonitor(self)
         self.nowFiring = set()
         self.receiving_conn = dict()
         self.input_firing_schedule = {}
         
-    def set_inputs(self, inputs, I_min=0.0, I_max=5.0):
+    def set_inputs(self, inputs, I_min=0.0, I_max=10.0):
         if len(inputs) != len(self.inputs):
             raise RuntimeError("Input size mismatch")
         for i, v in zip(self.inputs, inputs):
@@ -54,7 +53,7 @@ class RateIZNN(neat.iznn.IZNN):
                         if i in self.inputs:
                             self.receiving_conn[o] += w * self.input_currents[i]
                         else:
-                            self.receiving_conn[o] += w * 5 
+                            self.receiving_conn[o] += w * 10
 
             # Process current in neurons
             for i, n in self.neurons.items():

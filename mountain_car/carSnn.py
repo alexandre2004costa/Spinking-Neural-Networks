@@ -39,6 +39,8 @@ def simulate(genome, config, num_trials=10):
             total_reward += reward
             steps += 1
             done = terminated or truncated or steps >= 1000
+
+            #net.reset() # Reset the network for the next iteration
         
         env.close()
         trials_reward.append(float(total_reward))
@@ -85,6 +87,7 @@ def gui(winner, config, generation_reached):
             state, _ = env.reset()
             net = RateIZNN.create(winner, config)
             time.sleep(1)
+
     
     env.close()
 

@@ -25,7 +25,6 @@ def simulate(genome, config):
         output = net.advance(0.02)     
         #print(output)
         action = decode_output(output[0])
-        #print(action)
         state = simulate_cartpole(action, state)
         x, _, theta, _ = state
         

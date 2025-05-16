@@ -9,7 +9,7 @@ def decode_output(firing_rates):
     action = np.argmax(firing_rates)
     return action
     
-def simulate(genome, config, num_trials=10):
+def simulate(genome, config, num_trials=5):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     trials_reward = []
     
@@ -83,6 +83,7 @@ def gui(winner, config, generation_reached):
     env.close()
 
 def run_neat(config_file):
+    start_time = time.time()
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
                         config_file)
@@ -102,8 +103,10 @@ def run_neat(config_file):
     
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), simulate)
     winner = pop.run(pe.evaluate, 100)
+    elapsed_time = time.time() - start_time
     print('\nBest genome:\n{!s}'.format(winner))
-    gui(winner, config, generation_reached)
+    print('\nElapsed time: {:.2f} seconds'.format(elapsed_time))
+    #gui(winner, config, generation_reached)
     
 if __name__ == '__main__':
     run_neat("mountain_car/mountain_config_ann.txt")

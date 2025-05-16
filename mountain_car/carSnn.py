@@ -4,6 +4,7 @@ from rate_iznn import RateIZNN
 import multiprocessing
 import time
 import neat
+from customIzGenome import CustomIZGenome
 
 
 def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
@@ -15,7 +16,7 @@ def decode_output(firing_rates):
     action = np.argmax(firing_rates)
     return action
 
-def simulate(genome, config, num_trials=10):
+def simulate(genome, config, num_trials=5):
     trials_reward = []
     
     for _ in range(num_trials):
@@ -92,8 +93,8 @@ def gui(winner, config, generation_reached):
     env.close()
 
 def run(config_file, num_Generations=50):  
-
-    config = neat.Config(neat.iznn.IZGenome, neat.DefaultReproduction,
+    start_time = time.time()
+    config = neat.Config(CustomIZGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
@@ -117,9 +118,15 @@ def run(config_file, num_Generations=50):
 
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_single_genome)
     winner = pop.run(pe.evaluate, num_Generations)
+    elapsed_time = time.time() - start_time
 
     print(winner)
-    gui(winner, config, generation_reached)
+    print(f"STEPS : {winner.simulation_steps}")
+    print(f"I MAX : {winner.input_scaling}")
+    print(f"I MIN : {winner.input_min}")
+    print(f"BACKGROUND : {winner.background}")
+    print(f"Total time : {elapsed_time:.2f} sec")
+    #gui(winner, config, generation_reached)
 
 
 if __name__ == "__main__":

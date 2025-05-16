@@ -134,5 +134,5 @@ if __name__ == "__main__":
     'weight_mutate_power': 2.0,
     'weight_mutate_rate': 0.76,
     'weight_replace_rate': 0.2}
-        , "cart/cartSnn_config.txt", 50)
+        , "cart/cartSnn_config.txt", 100)
     

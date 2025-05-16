@@ -4,11 +4,11 @@ import random
 class CustomIZGenome(neat.iznn.IZGenome):
     def __init__(self, key):
         super().__init__(key)
-        self.simulation_steps_init_mean = 5
-        self.simulation_steps_init_stdev = 1
+        self.simulation_steps_init_mean = 50
+        self.simulation_steps_init_stdev = 20
         self.simulation_steps_min_value = 1
-        self.simulation_steps_max_value = 10  
-        self.simulation_steps_mutate_power = 1
+        self.simulation_steps_max_value = 100  
+        self.simulation_steps_mutate_power = 0
         self.simulation_steps_mutate_rate = 0.5
 
         self.input_scaling_init_mean = 100.0
@@ -18,7 +18,7 @@ class CustomIZGenome(neat.iznn.IZGenome):
         self.input_scaling_mutate_power = 10.0
         self.input_scaling_mutate_rate = 0.5
 
-        self.input_min_init_mean = 0.0
+        self.input_min_init_mean = -10.0
         self.input_min_init_stdev = 20.0
         self.input_min_min_value = -200.0
         self.input_min_max_value = 200.0

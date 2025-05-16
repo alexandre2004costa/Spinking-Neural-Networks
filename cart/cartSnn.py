@@ -4,6 +4,8 @@ import time
 from rate_iznn import RateIZNN
 import multiprocessing
 from cartPole import *
+from customIzGenome import CustomIZGenome
+import time
 
 def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     norm_state = (state - min_vals) / (max_vals - min_vals)
@@ -78,8 +80,8 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
     pygame.quit()
 
 def run(config_values, config_file, num_Generations=50):  
-
-    config = neat.Config(neat.iznn.IZGenome, neat.DefaultReproduction,
+    start_time = time.time()
+    config = neat.Config(CustomIZGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
@@ -112,8 +114,16 @@ def run(config_values, config_file, num_Generations=50):
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_single_genome)
     winner = pop.run(pe.evaluate, num_Generations)
 
+    elapsed_time = time.time() - start_time
     print(winner)
-    gui(winner, config, config_values["I_min"], config_values["I_diff"], config_values["background"], generation_reached)
+    print(f"STEPS : {winner.simulation_steps}")
+    print(f"I MAX : {winner.input_scaling}")
+    print(f"I MIN : {winner.input_min}")
+    print(f"BACKGROUND : {winner.background}")
+    print(f"Total time : {elapsed_time:.2f} sec")
+    
+    #gui(winner, config, config_values["I_min"], config_values["I_diff"], config_values["background"], generation_reached)
+    
 
 
 if __name__ == "__main__":
@@ -125,3 +135,4 @@ if __name__ == "__main__":
     'weight_mutate_rate': 0.76,
     'weight_replace_rate': 0.2}
         , "cart/cartSnn_config.txt", 50)
+    

@@ -3,6 +3,7 @@ import neat
 import pygame
 from cartPole import *
 import multiprocessing
+import time
 
 def eval_genome(genome, config):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
@@ -54,6 +55,7 @@ def visualize_genome(winner, config, generation):
     pygame.quit()
 
 def run_neat(config_file):
+    start_time = time.time()
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, 
                         neat.DefaultSpeciesSet, neat.DefaultStagnation, 
                         config_file)
@@ -73,8 +75,10 @@ def run_neat(config_file):
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
     winner = population.run(pe.evaluate, 100)
     
+    elapsed_time = time.time() - start_time
     print('\nBest genome:\n', winner)
-    visualize_genome(winner, config, generation)
+    print(f"Total time : {elapsed_time:.2f} sec")
+    #visualize_genome(winner, config, generation)
 
 if __name__ == '__main__':
     config_path = 'cart/cartAnn_config.txt'

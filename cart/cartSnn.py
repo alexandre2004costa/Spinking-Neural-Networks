@@ -25,7 +25,6 @@ def simulate(genome, config):
         output = net.advance(0.02)     
         #print(output)
         action = decode_output(output[0])
-        #print(action)
         state = simulate_cartpole(action, state)
         x, _, theta, _ = state
         
@@ -36,6 +35,8 @@ def simulate(genome, config):
         
         if steps_balanced >= 100000:
             break
+    
+        net.reset()
     
     return steps_balanced
 
@@ -59,10 +60,6 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
         input_values = encode_input(state, min_vals, max_vals, 0, 1)
         net.set_inputs(input_values)
 
-        for neuron in net.neurons.values():
-            neuron.current += I_background
-        for value in net.input_values:
-            value += I_background
 
         output = net.advance(0.02)     
         state = simulate_cartpole(output[0], state)
@@ -72,6 +69,8 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
             net = RateIZNN.create(winner, config)  
             state = np.array([0, 0, 0.05, 0])
             time.sleep(1)
+
+        net.reset() # Reset the network for the next iteration
 
         draw_cartpole(screen, state, generation_reached, 0, 0, "")
 

@@ -4,6 +4,7 @@ from rate_iznn import RateIZNN
 import multiprocessing
 import time
 import neat
+from customIzGenome import CustomIZGenome
 
 
 def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
@@ -90,9 +91,10 @@ def gui(winner, config, generation_reached):
     
     env.close()
 
+import configparser
 def run(config_file, num_Generations=50):  
 
-    config = neat.Config(neat.iznn.IZGenome, neat.DefaultReproduction,
+    config = neat.Config(CustomIZGenome , neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
@@ -118,8 +120,12 @@ def run(config_file, num_Generations=50):
     winner = pop.run(pe.evaluate, num_Generations)
 
     print(winner)
+    print(f"STEPS : {winner.simulation_steps}")
+    print(f"I MAX : {winner.input_scaling}")
+    print(f"I MIN : {winner.input_min}")
+    print(f"BACKGROUND : {winner.background}")
     gui(winner, config, generation_reached)
 
 
 if __name__ == "__main__":
-    run("pendulum/pendulum_config_snn.txt", 50)
+    run("pendulum/pendulum_config_snn.txt", 15)

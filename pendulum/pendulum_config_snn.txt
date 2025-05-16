@@ -2,16 +2,12 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = -200
-pop_size              = 100
+pop_size              = 50
 reset_on_extinction   = False
 
-[IZGenome]
-# node bias options
-activation_default = sigmoid
-activation_mutate_rate = 0.1
-activation_options = sigmoid
+[CustomIZGenome]
 
-# node bias options
+
 bias_init_mean = 0.0
 bias_init_stdev = 1.0
 bias_max_value = 30.0
@@ -42,7 +38,7 @@ node_delete_prob        = 0.1
 # network parameters
 num_inputs             = 3
 num_outputs            = 1
-num_hidden             = 0
+num_hidden             = 2
 
 # node parameters for regular spiking
 a_init_mean      = 0.02

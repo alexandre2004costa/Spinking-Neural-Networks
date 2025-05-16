@@ -6,7 +6,7 @@ import multiprocessing
 
 
     
-def simulate(genome, config, num_trials=10):
+def simulate(genome, config, num_trials=5):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     trials_reward = []
 
@@ -19,11 +19,7 @@ def simulate(genome, config, num_trials=10):
 
         while not done:
 
-            normalized_state = (state - env.observation_space.low) / (
-                env.observation_space.high - env.observation_space.low
-            )
-
-            output = net.activate(normalized_state)
+            output = net.activate(state)
             # Output ∈ [-1, 1] -> [-2, 2]
             
             action = np.clip(output[0], -1.0, 1.0) * 2.0  
@@ -37,6 +33,7 @@ def simulate(genome, config, num_trials=10):
 
     avg_reward = sum(trials_reward) / len(trials_reward)
     if np.isnan(avg_reward) or np.isinf(avg_reward):
+        print("Genome produced NaN or Inf reward, returning -1000.0")
         return -1000.0
     return avg_reward
 
@@ -51,11 +48,7 @@ def gui(winner, config, generation_reached):
     total_reward = 0
 
     while episode < max_episodes:
-        normalized_state = (state - env.observation_space.low) / (
-            env.observation_space.high - env.observation_space.low
-        )
-
-        output = net.activate(normalized_state)
+        output = net.activate(state)
         # Output ∈ [-1, 1] -> [-2, 2]
         action = np.clip(output[0], -1.0, 1.0) * 2.0  
         state, reward, terminated, truncated, _ = env.step([action])
@@ -71,6 +64,7 @@ def gui(winner, config, generation_reached):
 
         if terminated or truncated or steps >= 200:
             print(f"Episode {episode+1} finished after {total_reward} reward")
+            total_reward = 0
             episode += 1
             steps = 0
             state, _ = env.reset()
@@ -97,7 +91,7 @@ def run_neat(config_file):
     pop.add_reporter(stats)
     
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), simulate)
-    winner = pop.run(pe.evaluate, 100)
+    winner = pop.run(pe.evaluate, 300)
     print('\nBest genome:\n{!s}'.format(winner))
     gui(winner, config, generation_reached)
     

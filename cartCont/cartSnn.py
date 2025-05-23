@@ -28,7 +28,9 @@ def simulate(genome, config):
 
         output = net.advance(0.01)     
         #print(output)
-        action = compute_force(output)
+
+        action = compute_force(output, genome.sigma)
+        #print(action)
         state = simulate_cartpole(action, state)
         x, _, theta, _ = state
         
@@ -114,6 +116,7 @@ def run(config_file, num_Generations=50):
     print(f"I MAX : {winner.input_scaling}")
     print(f"I MIN : {winner.input_min}")
     print(f"BACKGROUND : {winner.background}")
+    print(f"Sigma : {winner.sigma}")
     print(f"Total time : {elapsed_time:.2f} sec")
     
     #gui(winner, config, config_values["I_min"], config_values["I_diff"], config_values["background"], generation_reached)
@@ -121,5 +124,5 @@ def run(config_file, num_Generations=50):
 
 
 if __name__ == "__main__":
-    run("cart/cartSnn_config.txt", 100)
+    run("cart/cartSnn_config.txt", 250)
     

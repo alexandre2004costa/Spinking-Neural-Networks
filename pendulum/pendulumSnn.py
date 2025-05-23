@@ -12,10 +12,12 @@ def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     I_values = I_min + norm_state * (I_max - I_min)
     return I_values
 
-def decode_output(firing_rates):
-    return np.tanh(firing_rates[0]) * 2.0
+def decode_output(firing_rates, min_rate=0, max_rate=20, action_min=-2, action_max=2):
+    rate = np.clip(firing_rates[0], min_rate, max_rate)
+    action = ((rate - min_rate) / (max_rate - min_rate)) * (action_max - action_min) + action_min
+    return action
 
-def simulate(genome, config, num_trials=3):
+def simulate(genome, config, num_trials=5):
     trials_reward = []
     
     for _ in range(num_trials):
@@ -32,15 +34,15 @@ def simulate(genome, config, num_trials=3):
             net.set_inputs(input_values)
 
             output = net.advance(0.02)
-            #print(output)
             action = decode_output(output)
+            #print(f"Outp : {output},  ACTION : {action}, {np.array([action])}")
             state, reward, terminated, truncated, _ = env.step(np.array([action], dtype=np.float32))  
             
             total_reward += reward
             steps += 1
             done = terminated or truncated or steps >= 200
 
-            #net.reset() # Reset the network for the next iteration
+            net.reset() # Reset the network for the next iteration
         
         env.close()
         trials_reward.append(float(total_reward))
@@ -128,4 +130,4 @@ def run(config_file, num_Generations=50):
 
 
 if __name__ == "__main__":
-    run("pendulum/pendulum_config_snn.txt", 15)
+    run("pendulum/pendulum_config_snn.txt", 100)

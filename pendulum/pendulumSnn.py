@@ -12,10 +12,16 @@ def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     I_values = I_min + norm_state * (I_max - I_min)
     return I_values
 
-def decode_output(firing_rates, min_rate=0, max_rate=20, action_min=-2, action_max=2):
-    rate = np.clip(firing_rates[0], min_rate, max_rate)
-    action = ((rate - min_rate) / (max_rate - min_rate)) * (action_max - action_min) + action_min
-    return action
+
+def compute_force(weighted_sum, sigma=1.0):
+    try:
+        Fn = 1.0 / (1.0 + np.exp(-sigma * (weighted_sum)))
+        Ft = 2 * (2 * Fn - 1)
+        #print(f"WS : {weighted_sum} Fn: {Fn}, Ft: {Ft}")
+        return Ft
+    except OverflowError:
+        return 2.0
+
 
 def simulate(genome, config, num_trials=5):
     trials_reward = []
@@ -32,9 +38,8 @@ def simulate(genome, config, num_trials=5):
         while not done:
             input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
             net.set_inputs(input_values)
-
-            output = net.advance(0.02)
-            action = decode_output(output)
+            output = net.advance(0.01)
+            action = compute_force(output, genome.sigma)
             #print(f"Outp : {output},  ACTION : {action}, {np.array([action])}")
             state, reward, terminated, truncated, _ = env.step(np.array([action], dtype=np.float32))  
             

@@ -5,34 +5,34 @@ class CustomIZGenome(neat.iznn.IZGenome):
     def __init__(self, key):
         super().__init__(key)
         self.simulation_steps_init_mean = 50
-        self.simulation_steps_init_stdev = 40   # aumentado
+        self.simulation_steps_init_stdev = 8
         self.simulation_steps_min_value = 1
-        self.simulation_steps_max_value = 200   # aumentado
-        self.simulation_steps_mutate_power = 20 # aumentado
-        self.simulation_steps_mutate_rate = 0.5
+        self.simulation_steps_max_value = 100
+        self.simulation_steps_mutate_power = 5
+        self.simulation_steps_mutate_rate = 0.0
 
-        self.input_scaling_init_mean = 80.0
-        self.input_scaling_init_stdev = 60.0    # aumentado
-        self.input_scaling_min_value = 1.0      # aumentado
-        self.input_scaling_max_value = 500.0    # aumentado
-        self.input_scaling_mutate_power = 40.0  # aumentado
+        self.input_scaling_init_mean = 10.0
+        self.input_scaling_init_stdev = 5.0
+        self.input_scaling_min_value = 1.0
+        self.input_scaling_max_value = 30.0
+        self.input_scaling_mutate_power = 5.0
         self.input_scaling_mutate_rate = 0.5
 
-        self.input_min_init_mean = 0.0
-        self.input_min_init_stdev = 60.0        # aumentado
-        self.input_min_min_value = -500.0       # aumentado
-        self.input_min_max_value = 500.0        # aumentado
-        self.input_min_mutate_power = 40.0      # aumentado
+        self.input_min_init_mean = -7.0
+        self.input_min_init_stdev = 5.0
+        self.input_min_min_value = -30.0
+        self.input_min_max_value = 10.0
+        self.input_min_mutate_power = 2.0
         self.input_min_mutate_rate = 0.5
 
         self.background_init_mean = 0.0
-        self.background_init_stdev = 10.0       # aumentado
-        self.background_min_value = -100.0      # aumentado
-        self.background_max_value = 100.0       # aumentado
-        self.background_mutate_power = 10.0     # aumentado
+        self.background_init_stdev = 2.0
+        self.background_min_value = -10.0
+        self.background_max_value = 10.0
+        self.background_mutate_power = 2.0
         self.background_mutate_rate = 0.5
 
-        self.sigma_init_mean = 1.0
+        self.sigma_init_mean = 1.05
         self.sigma_init_stdev = 0.1
         self.sigma_min_value = 0.8
         self.sigma_max_value = 1.2

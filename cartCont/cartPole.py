@@ -21,8 +21,8 @@ cart_width = 50
 cart_height = 10
 pole_pixel_length = 100
 
-min_vals = np.array([-2.4, -12.0, -0.21, -12.0])
-max_vals = np.array([2.4, 12.0, 0.21, 12.0])
+min_vals = np.array([-4.8, -0.418])
+max_vals = np.array([4.8, 0.418])
 
 
 def simulate_cartpole(force, state):

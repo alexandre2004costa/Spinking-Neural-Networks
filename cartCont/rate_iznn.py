@@ -80,7 +80,6 @@ class RateIZNN(neat.iznn.IZNN):
                         else:
                             weighted_sum += self.neurons[in_id].current * weight
 
-
         return weighted_sum
 
     @staticmethod

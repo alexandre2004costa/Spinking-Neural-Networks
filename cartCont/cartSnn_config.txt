@@ -1,9 +1,8 @@
-#--- parameters for the XOR-2 experiment ---#
 
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 5000
-pop_size              = 150
+pop_size              = 250
 reset_on_extinction   = False
 
 [CustomIZGenome]
@@ -21,8 +20,8 @@ compatibility_disjoint_coefficient = 1.0
 compatibility_weight_coefficient   = 0.5
 
 
-conn_add_prob = 0.1
-conn_delete_prob = 0.1
+conn_add_prob = 0.3
+conn_delete_prob = 0.3
 
 enabled_default         = True
 enabled_mutate_rate     = 0.01
@@ -30,8 +29,8 @@ enabled_mutate_rate     = 0.01
 feed_forward = False 
 initial_connection = full_direct
 
-node_add_prob           = 0.03
-node_delete_prob        = 0.03
+node_add_prob           = 0.3
+node_delete_prob        = 0.3
 
 num_hidden              = 0
 num_inputs              = 2
@@ -77,10 +76,10 @@ response_mutate_power = 0.0
 response_mutate_rate  = 0.0
 response_replace_rate = 0.0
 
-weight_init_mean = 20.0         
+weight_init_mean = 0.0         
 weight_init_stdev = 2.0          
-weight_max_value = 50.0          
-weight_min_value = -50.0         
+weight_max_value = 15.0          
+weight_min_value = -15.0         
 weight_mutate_power = 1.0        
 weight_mutate_rate = 0.8
 weight_replace_rate = 0.1

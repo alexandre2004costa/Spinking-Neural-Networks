@@ -15,6 +15,7 @@ def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
 def compute_force(weighted_sum, sigma=1.0):
     Fn = 1.0 / (1.0 + np.exp(-sigma * weighted_sum))
     Ft = 10 * (2 * Fn - 1)
+    #print(f"WS : {weighted_sum} Fn: {Fn}, Ft: {Ft}")
     return Ft
 
 def simulate(genome, config):
@@ -23,7 +24,7 @@ def simulate(genome, config):
     steps_balanced = 0
 
     while True:
-        input_values = encode_input(state, min_vals, max_vals, 0, 1)
+        input_values = encode_input([state[0], state[2]], min_vals, max_vals, 0, 1)
         net.set_inputs(input_values)
 
         output = net.advance(0.01)     
@@ -42,7 +43,7 @@ def simulate(genome, config):
         if steps_balanced >= 5000:
             break
     
-        net.reset()
+        #net.reset()
     
     return steps_balanced
 
@@ -124,5 +125,5 @@ def run(config_file, num_Generations=50):
 
 
 if __name__ == "__main__":
-    run("cart/cartSnn_config.txt", 250)
+    run("cartCont/cartSnn_config.txt", 150)
     

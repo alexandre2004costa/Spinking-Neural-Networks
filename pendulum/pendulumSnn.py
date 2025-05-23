@@ -23,7 +23,7 @@ def compute_force(weighted_sum, sigma=1.0):
         return 2.0
 
 
-def simulate(genome, config, num_trials=5):
+def simulate(genome, config, num_trials=3):
     trials_reward = []
     
     for _ in range(num_trials):
@@ -47,7 +47,7 @@ def simulate(genome, config, num_trials=5):
             steps += 1
             done = terminated or truncated or steps >= 200
 
-            net.reset() # Reset the network for the next iteration
+            #net.reset() # Reset the network for the next iteration
         
         env.close()
         trials_reward.append(float(total_reward))

@@ -1,11 +1,13 @@
 import neat
 import numpy as np
 import time
-from rate_iznn import RateIZNN
 import multiprocessing
-from cartPole import *
-from customIzGenome import CustomIZGenome
 import time
+from stats import RLStatsCollector
+from cartPole import *
+from cartCont.customIzGenome import CustomIZGenome
+from rate_iznn import RateIZNN
+
 
 def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     norm_state = (state - min_vals) / (max_vals - min_vals)

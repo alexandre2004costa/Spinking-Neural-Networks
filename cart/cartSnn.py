@@ -4,7 +4,7 @@ import time
 import multiprocessing
 import time
 from stats import RLStatsCollector
-from cart.cartPole import *
+from cartPole import *
 from cart.customIzGenome import CustomIZGenome
 from rate_iznn import RateIZNN
 

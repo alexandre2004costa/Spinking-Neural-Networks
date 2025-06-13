@@ -4,7 +4,7 @@ import pygame
 import multiprocessing
 import time
 from stats import RLStatsCollector
-from cart.cartPole import *
+from cartPole import *
 
 def eval_genome(genome, config):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
@@ -127,7 +127,6 @@ def run_experiment(config_file, num_Generations=50):
 
     best_fitness = max(stats_collector.fitness_history) if stats_collector.fitness_history else 0
     mean_fitness = np.mean(stats_collector.fitness_history) if stats_collector.fitness_history else 0
-    success_generation = stats_collector.success_generation if stats_collector.success_generation else num_Generations
     success = 1 if stats_collector.success_generation else 0
     mean_decision_time = stats_collector.mean_decision_time() if stats_collector.action_times else 0
     num_hidden = config.genome_config.num_hidden if hasattr(config.genome_config, "num_hidden") else None
@@ -135,7 +134,6 @@ def run_experiment(config_file, num_Generations=50):
     return {
         "learning_time": elapsed_time,
         "success": success,
-        "success_generation": success_generation,
         "mean_decision_time": mean_decision_time,
         "best_fitness": best_fitness,
         "mean_fitness": mean_fitness,

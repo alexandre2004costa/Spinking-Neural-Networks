@@ -69,7 +69,7 @@ def run_stats(Runs, NumMaxGenerations, experiment_config, result_file, run_exper
 
     # Write results to CSV
     FileName = result_file + str(Runs) + ".csv"
-    with open(FileName, "w", newline="") as csvfile:
+    with open("results/" + FileName, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["stat", "mean", "min", "max"])
         for key in keys:

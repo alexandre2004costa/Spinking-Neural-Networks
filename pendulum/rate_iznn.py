@@ -9,13 +9,13 @@ class RateIZNN(neat.iznn.IZNN):
         self.input_scaling = input_scaling
         self.input_min = input_min
         self.background = background
-        self.spike_trains = {i: [] for i in outputs}
         self.input_currents = {} 
         self.input_fired = {} 
         self.connections = connections
         self.nowFiring = set()
         self.receiving_conn = dict()
         self.input_firing_schedule = {}
+        self.num_output_neurons = len(outputs)
         
     def set_inputs(self, inputs):
         if len(inputs) != len(self.inputs):
@@ -70,8 +70,18 @@ class RateIZNN(neat.iznn.IZNN):
             for i in self.receiving_conn:
                 self.receiving_conn[i] = 0
 
-        
-        return [self.neurons[i].spike_count for i in self.outputs]
+        weighted_sum = 0.0
+        for out_id in range(self.num_output_neurons):
+            for in_id, connections in self.connections.items():
+                for o, weight in connections:
+                    if o == out_id:
+                        if in_id < 0:
+                            #print(self.input_values[in_id])
+                            weighted_sum += self.input_values[in_id] * weight
+                        else:
+                            weighted_sum += self.neurons[in_id].current * weight
+
+        return weighted_sum
 
     @staticmethod
     def create(genome, config):
@@ -79,12 +89,12 @@ class RateIZNN(neat.iznn.IZNN):
         inputs = []
         outputs = []
         connections = {}
-
+        
         sim_steps = getattr(genome, "simulation_steps", 100)
         input_scaling = getattr(genome, "input_scaling", 100.0)
         input_min = getattr(genome, "input_min", 0.0)
         background = getattr(genome, "background", 50.0)
-        
+
         # Add input nodes
         for input_id in config.genome_config.input_keys:
             inputs.append(input_id)

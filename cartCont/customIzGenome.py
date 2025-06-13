@@ -9,9 +9,9 @@ class CustomIZGenome(neat.iznn.IZGenome):
         self.simulation_steps_min_value = 1
         self.simulation_steps_max_value = 100
         self.simulation_steps_mutate_power = 5
-        self.simulation_steps_mutate_rate = 0
+        self.simulation_steps_mutate_rate = 0.0
 
-        self.input_scaling_init_mean = 60.0
+        self.input_scaling_init_mean = 30.0
         self.input_scaling_init_stdev = 10
         self.input_scaling_min_value = 1
         self.input_scaling_max_value = 150.0
@@ -32,7 +32,7 @@ class CustomIZGenome(neat.iznn.IZGenome):
         self.background_mutate_power = 2.0
         self.background_mutate_rate = 0.5
 
-        self.sigma_init_mean = 1.0
+        self.sigma_init_mean = 1.05
         self.sigma_init_stdev = 0.1
         self.sigma_min_value = 0.8
         self.sigma_max_value = 1.2

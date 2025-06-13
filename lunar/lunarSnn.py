@@ -4,13 +4,15 @@ import time
 import multiprocessing
 import neat
 import numpy as np
+from customIzGenome import CustomIZGenome
+import time
 
 def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     norm_state = (state - min_vals) / (max_vals - min_vals)
     I_values = I_min + norm_state * (I_max - I_min)
     return I_values
 
-def simulate(genome, config, num_trials=3):
+def simulate(genome, config, num_trials=10):
     trials_reward = []
     
     for _ in range(num_trials):
@@ -88,8 +90,8 @@ def eval_single_genome(genome, config):
     return genome.fitness 
 
 def run(config_file, num_Generations=50):  
-
-    config = neat.Config(neat.iznn.IZGenome, neat.DefaultReproduction,
+    start_time = time.time()
+    config = neat.Config(CustomIZGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
 
@@ -114,8 +116,15 @@ def run(config_file, num_Generations=50):
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_single_genome)
     winner = pop.run(pe.evaluate, num_Generations)
 
+    elapsed_time = time.time() - start_time
     print(winner)
-    gui(winner, config, generation_reached)
+    print(f"STEPS : {winner.simulation_steps}")
+    print(f"I MAX : {winner.input_scaling}")
+    print(f"I MIN : {winner.input_min}")
+    print(f"BACKGROUND : {winner.background}")
+    print(f"Total time : {elapsed_time:.2f} sec")
+    
+    #gui(winner, config, generation_reached)
 
 if __name__ == "__main__":
     run("lunar/lunar_config_snn.txt", 100)

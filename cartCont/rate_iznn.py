@@ -1,27 +1,28 @@
 import neat
 import numpy as np
 import random
-from spike_monitor import *
 
 class RateIZNN(neat.iznn.IZNN):
-    def __init__(self, neurons, inputs, outputs, connections):
+    def __init__(self, neurons, inputs, outputs, connections, simulation_steps, input_scaling, input_min, background):
         super().__init__(neurons, inputs, outputs)
-        self.simulation_steps = 100
-        self.spike_trains = {i: [] for i in outputs}
+        self.simulation_steps = simulation_steps
+        self.input_scaling = input_scaling
+        self.input_min = input_min
+        self.background = background
         self.input_currents = {} 
         self.input_fired = {} 
         self.connections = connections
-        #self.monitor = SpikeMonitor(self)
         self.nowFiring = set()
         self.receiving_conn = dict()
         self.input_firing_schedule = {}
+        self.num_output_neurons = len(outputs)
         
-    def set_inputs(self, inputs, I_min=0.0, I_max=10.0):
+    def set_inputs(self, inputs):
         if len(inputs) != len(self.inputs):
             raise RuntimeError("Input size mismatch")
         for i, v in zip(self.inputs, inputs):
            self.input_values[i] = v
-           self.input_currents[i] = I_min + v * I_max  
+           self.input_currents[i] = self.input_min + v * self.input_scaling  
 
         # Defining the schedule of input spikes
         self.input_firing_schedule = {}
@@ -55,11 +56,11 @@ class RateIZNN(neat.iznn.IZNN):
                         if i in self.inputs:
                             self.receiving_conn[o] += w * self.input_currents[i]
                         else:
-                            self.receiving_conn[o] += w * 10 + 10
+                            self.receiving_conn[o] += w * (self.input_scaling - self.input_min)
 
             # Process current in neurons
             for i, n in self.neurons.items():
-                n.current = n.bias + self.receiving_conn[i]
+                n.current = n.bias + self.receiving_conn[i] + self.background
                 n.advance(dt)
                 if n.fired > 0:
                     self.nowFiring.add(i)
@@ -69,7 +70,17 @@ class RateIZNN(neat.iznn.IZNN):
             for i in self.receiving_conn:
                 self.receiving_conn[i] = 0
 
-        return [self.neurons[i].spike_count for i in self.outputs]
+        weighted_sum = 0.0
+        for out_id in range(self.num_output_neurons):
+            for in_id, connections in self.connections.items():
+                for o, weight in connections:
+                    if o == out_id:
+                        if in_id < 0:
+                            weighted_sum += self.input_currents[in_id] * weight
+                        else:
+                            weighted_sum += self.neurons[in_id].current * weight
+
+        return weighted_sum
 
     @staticmethod
     def create(genome, config):
@@ -78,6 +89,11 @@ class RateIZNN(neat.iznn.IZNN):
         outputs = []
         connections = {}
         
+        sim_steps = getattr(genome, "simulation_steps", 100)
+        input_scaling = getattr(genome, "input_scaling", 100.0)
+        input_min = getattr(genome, "input_min", 0.0)
+        background = getattr(genome, "background", 50.0)
+
         # Add input nodes
         for input_id in config.genome_config.input_keys:
             inputs.append(input_id)
@@ -98,4 +114,4 @@ class RateIZNN(neat.iznn.IZNN):
                 else:
                     connections[i] = [(o, cg.weight)]                    
         
-        return RateIZNN(neurons, inputs, outputs, connections)
+        return RateIZNN(neurons, inputs, outputs, connections, sim_steps, input_scaling, input_min, background)

@@ -12,10 +12,18 @@ def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     I_values = I_min + norm_state * (I_max - I_min)
     return I_values
 
-def decode_output(firing_rates):
-    return np.tanh(firing_rates[0]) * 2.0
 
-def simulate(genome, config, num_trials=3):
+def compute_force(weighted_sum, sigma=1.0):
+    try:
+        Fn = 1.0 / (1.0 + np.exp(-sigma * (weighted_sum)))
+        Ft = 2 * (2 * Fn - 1)
+        #print(f"WS : {weighted_sum} Fn: {Fn}, Ft: {Ft}")
+        return Ft
+    except OverflowError:
+        return 2.0
+
+
+def simulate(genome, config, num_trials=5):
     trials_reward = []
     
     for _ in range(num_trials):
@@ -30,10 +38,9 @@ def simulate(genome, config, num_trials=3):
         while not done:
             input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
             net.set_inputs(input_values)
-
-            output = net.advance(0.02)
-            #print(output)
-            action = decode_output(output)
+            output = net.advance(0.01)
+            action = compute_force(output, genome.sigma)
+            #print(f"Outp : {output},  ACTION : {action}, {np.array([action])}")
             state, reward, terminated, truncated, _ = env.step(np.array([action], dtype=np.float32))  
             
             total_reward += reward
@@ -67,23 +74,19 @@ def gui(winner, config, generation_reached):
     while episode < 10:
         input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
         net.set_inputs(input_values)
-
-        output = net.advance(0.02)
-        #print(output)
-        action = decode_output(output)
+        output = net.advance(0.01)
+        action = compute_force(output, winner.sigma)
+        #print(f"Outp : {output},  ACTION : {action}, {np.array([action])}")
         state, reward, terminated, truncated, _ = env.step(np.array([action], dtype=np.float32))  
         
         total_reward += reward
         steps += 1
-        if hasattr(env, 'window') and hasattr(env.window, 'window_surface_v2'):
-            text = f"Generation: {generation_reached}, Episode: {episode+1}/{10}, Steps: {steps}"
-            position, velocity = state
-            text += f"\nPos: {position:.2f}, Vel: {velocity:.2f}, Action: {action}"
 
         if terminated or truncated or steps >= 200:
             print(f"Episode {episode+1} finished after {steps} steps with total reward: {total_reward}")
             episode += 1
             steps = 0
+            total_reward = 0
             state, _ = env.reset()
             net = RateIZNN.create(winner, config)
             time.sleep(1)
@@ -91,7 +94,6 @@ def gui(winner, config, generation_reached):
     
     env.close()
 
-import configparser
 def run(config_file, num_Generations=50):  
 
     config = neat.Config(CustomIZGenome , neat.DefaultReproduction,
@@ -128,4 +130,4 @@ def run(config_file, num_Generations=50):
 
 
 if __name__ == "__main__":
-    run("pendulum/pendulum_config_snn.txt", 15)
+    run("pendulum/pendulum_config_snn.txt", 100)

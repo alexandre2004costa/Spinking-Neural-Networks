@@ -21,13 +21,12 @@ cart_width = 50
 cart_height = 10
 pole_pixel_length = 100
 
-min_vals = np.array([-2.4, -12.0, -0.21, -12.0])
-max_vals = np.array([2.4, 12.0, 0.21, 12.0])
+min_vals = np.array([-4.8, -0.418])
+max_vals = np.array([4.8, 0.418])
 
 
-def simulate_cartpole(action, state):
+def simulate_cartpole(force, state):
     x, x_vel, theta, theta_vel = state # the 4 inputs
-    force = cart_force if action > 0 else -cart_force
 
     cos_theta = math.cos(theta)
     sin_theta = math.sin(theta)
@@ -65,3 +64,10 @@ def draw_cartpole(screen, state, generation, avg_fitness, max_fitness, message="
         screen.blit(message_text, (10, 40))
 
     pygame.display.flip()
+
+#running = True
+#while running:
+#    for event in pygame.event.get():
+#        if event.type == pygame.QUIT:
+#            running = False
+#    draw_cartpole(np.array([0, 0, 20, 0]), 0, 0, 0)

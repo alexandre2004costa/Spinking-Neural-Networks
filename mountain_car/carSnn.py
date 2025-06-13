@@ -166,7 +166,7 @@ def run_experiment(config_file, num_Generations=50):
     winner = pop.run(pe.evaluate, num_Generations)
     stats_collector.end_experiment()
 
-    # Avalia o tempo médio de decisão do vencedor no MountainCar
+    # Average decision time and total reward
     env = gym.make("MountainCar-v0", render_mode=None)
     state, _ = env.reset()
     net = RateIZNN.create(winner, config)

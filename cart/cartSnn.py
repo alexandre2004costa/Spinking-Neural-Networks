@@ -171,7 +171,6 @@ def run_experiment(config_file, num_Generations=50):
     return {
         "learning_time": stats_collector.learning_time(),
         "success": 1 if stats_collector.success_generation else 0,
-        "success_generation": stats_collector.success_generation if stats_collector.success_generation else num_Generations,
         "mean_decision_time": stats_collector.mean_decision_time(),
         "best_fitness": max(stats_collector.fitness_history) if stats_collector.fitness_history else 0,
         "mean_fitness": np.mean(stats_collector.fitness_history) if stats_collector.fitness_history else 0,

@@ -65,10 +65,3 @@ def draw_cartpole(screen, state, generation, avg_fitness, max_fitness, message="
         screen.blit(message_text, (10, 40))
 
     pygame.display.flip()
-
-#running = True
-#while running:
-#    for event in pygame.event.get():
-#        if event.type == pygame.QUIT:
-#            running = False
-#    draw_cartpole(np.array([0, 0, 20, 0]), 0, 0, 0)

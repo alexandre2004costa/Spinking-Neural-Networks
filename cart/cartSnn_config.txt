@@ -77,13 +77,13 @@ response_mutate_power = 0.0
 response_mutate_rate  = 0.0
 response_replace_rate = 0.0
 
-weight_init_mean = 20.0         
+weight_init_mean = 2.0         
 weight_init_stdev = 2.0          
-weight_max_value = 50.0          
-weight_min_value = -50.0         
-weight_mutate_power = 1.0        
-weight_mutate_rate = 0.8
-weight_replace_rate = 0.1
+weight_max_value = 30.0          
+weight_min_value = -20.0         
+weight_mutate_power = 2.0        
+weight_mutate_rate = 0.76
+weight_replace_rate = 0.2
 
 [DefaultSpeciesSet]
 compatibility_threshold = 3.0

@@ -1,9 +1,0 @@
-stat,mean,min,max
-learning_time,1.09,0.96,1.16
-success,1.00,1,1
-success_generation,2.90,1,4
-mean_decision_time,1.63e-06,1.51e-06,1.82e-06
-best_fitness,100000.00,100000,100000
-mean_fitness,44956.18,25256.50,100000.00
-total_generations,2.90,1,4
-hidden_nodes,0.00,0.00,0.00

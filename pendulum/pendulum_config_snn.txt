@@ -37,7 +37,7 @@ node_delete_prob        = 0.1
 # network parameters
 num_inputs             = 3
 num_outputs            = 1
-num_hidden             = 5 
+num_hidden             = 2 
 
 # node parameters for regular spiking
 a_init_mean      = 0.02

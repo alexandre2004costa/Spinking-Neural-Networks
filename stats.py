@@ -63,19 +63,25 @@ def run_stats(Runs, NumMaxGenerations, experiment_config, result_file, run_exper
     summary = {}
     for key in keys:
         values = [r[key] for r in results]
-        summary[key+"_mean"] = np.mean(values)
-        summary[key+"_min"] = np.min(values)
-        summary[key+"_max"] = np.max(values)
+        filtered = [v for v in values if v is not None]
+        if filtered:
+            summary[key+"_min"] = np.min(filtered)
+            summary[key+"_max"] = np.max(filtered)
+            summary[key+"_mean"] = np.mean(filtered)
+        else:
+            summary[key+"_min"] = "NA"
+            summary[key+"_max"] = "NA"
+            summary[key+"_mean"] = "NA"
 
     # Write results to CSV
     FileName = result_file + str(Runs) + ".csv"
     with open("results/" + FileName, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(["stat", "mean", "min", "max"])
+        writer.writerow(["stat", "min", "max", "mean"])
         for key in keys:
-            mean = summary[key+"_mean"]
             minv = summary[key+"_min"]
             maxv = summary[key+"_max"]
+            mean = summary[key+"_mean"]
             def fmt(val):
                 if val == 0:
                     return "0.00"
@@ -85,7 +91,7 @@ def run_stats(Runs, NumMaxGenerations, experiment_config, result_file, run_exper
                     else:
                         return f"{val:.2f}"
                 return val
-            writer.writerow([key, fmt(mean), fmt(minv), fmt(maxv)])
+            writer.writerow([key,fmt(minv), fmt(maxv), fmt(mean)])
 
 
     print("Results saved to ", FileName)

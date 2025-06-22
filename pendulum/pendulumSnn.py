@@ -162,45 +162,61 @@ def run_experiment(config_file, num_Generations=50):
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_single_genome)
     winner = pop.run(pe.evaluate, num_Generations)
     stats_collector.end_experiment()
+    success = 1 if stats_collector.success_generation else 0
+    if success:
+        # Average decision time and total reward
+        env = gym.make("Pendulum-v1", render_mode=None)
+        state, _ = env.reset()
+        net = RateIZNN.create(winner, config)
+        action_times = []
+        total_reward = 0
+        steps = 0
+        done = False
 
-    # Average decision time and total reward
-    env = gym.make("Pendulum-v1", render_mode=None)
-    state, _ = env.reset()
-    net = RateIZNN.create(winner, config)
-    action_times = []
-    total_reward = 0
-    steps = 0
-    done = False
+        while not done and steps < 200:
+            input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
+            net.set_inputs(input_values)
+            t0 = time.time()
+            output = net.advance(0.01)
+            action = compute_force(output, winner.sigma)
+            t1 = time.time()
+            action_times.append(t1 - t0)
+            state, reward, terminated, truncated, _ = env.step(np.array([action], dtype=np.float32))
+            total_reward += reward
+            steps += 1
+            done = terminated or truncated or steps >= 200
 
-    while not done and steps < 200:
-        input_values = encode_input(state, env.observation_space.low, env.observation_space.high)
-        net.set_inputs(input_values)
-        t0 = time.time()
-        output = net.advance(0.01)
-        action = compute_force(output, winner.sigma)
-        t1 = time.time()
-        action_times.append(t1 - t0)
-        state, reward, terminated, truncated, _ = env.step(np.array([action], dtype=np.float32))
-        total_reward += reward
-        steps += 1
-        done = terminated or truncated or steps >= 200
+        env.close()
 
-    env.close()
-
+        return {
+            "learning_time": stats_collector.learning_time(),
+            "success": 1,
+            "mean_decision_time": np.mean(action_times) if action_times else 0,
+            "best_fitness": max(stats_collector.fitness_history) if stats_collector.fitness_history else 0,
+            "mean_fitness": np.mean(stats_collector.fitness_history) if stats_collector.fitness_history else 0,
+            "hidden_nodes": len(winner.nodes) - len(config.genome_config.output_keys),
+            "total_generations": len(stats_collector.fitness_history),
+            "winner_steps": getattr(winner, "simulation_steps", None),
+            "winner_input_scaling": getattr(winner, "input_scaling", None),
+            "winner_input_min": getattr(winner, "input_min", None),
+            "winner_background": getattr(winner, "background", None),
+            "final_reward": total_reward
+        }
+    
     return {
-        "learning_time": stats_collector.learning_time(),
-        "success": 1 if stats_collector.success_generation else 0,
-        "mean_decision_time": np.mean(action_times) if action_times else 0,
-        "best_fitness": max(stats_collector.fitness_history) if stats_collector.fitness_history else 0,
-        "mean_fitness": np.mean(stats_collector.fitness_history) if stats_collector.fitness_history else 0,
-        "hidden_nodes": len(winner.nodes) - len(config.genome_config.output_keys),
-        "total_generations": len(stats_collector.fitness_history),
-        "winner_steps": getattr(winner, "simulation_steps", None),
-        "winner_input_scaling": getattr(winner, "input_scaling", None),
-        "winner_input_min": getattr(winner, "input_min", None),
-        "winner_background": getattr(winner, "background", None),
-        "final_reward": total_reward
-    }
+        "learning_time": None,
+        "success": 0,
+        "mean_decision_time": None,
+        "best_fitness": None,
+        "mean_fitness": None,
+        "hidden_nodes": None,
+        "total_generations": None,
+        "winner_steps": None,
+        "winner_input_scaling": None,
+        "winner_input_min": None,
+        "winner_background": None,
+        "final_reward": None
+    } 
 
 if __name__ == "__main__":
     print("Running Pendulum SNN experiment...")

@@ -34,7 +34,7 @@ class RateIZNN(neat.iznn.IZNN):
                 firing_steps = set()
             self.input_firing_schedule[i] = firing_steps
             
-    def advance(self, dt):
+    def advance(self, dt, randomInputWindow=False):
         for i, n in self.neurons.items():
             n.spike_count = 0
             self.receiving_conn[i] = 0
@@ -45,7 +45,13 @@ class RateIZNN(neat.iznn.IZNN):
 
             # Input spiking
             for i in self.inputs:
-                self.input_fired[i] = t in self.input_firing_schedule[i]
+                if randomInputWindow:
+                    # Decides if the input fires this step based on the probability
+                    self.input_fired[i] = random.random() < self.input_values[i]
+                else:
+                    # Check if the input is scheduled to fire at this time step
+                    self.input_fired[i] = t in self.input_firing_schedule[i]
+
                 if self.input_fired[i]:
                     self.nowFiring.add(i)
 

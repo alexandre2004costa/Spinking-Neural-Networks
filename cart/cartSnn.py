@@ -184,7 +184,7 @@ def run_experiment(config_file, num_Generations=50):
 
 
 if __name__ == "__main__":
-    print("running Snn experiment")
-    #run("cart/cartSnn_config.txt", 100)
+    #print("running Snn experiment")
+    run("cart/cartSnn_config.txt", 100)
 
     

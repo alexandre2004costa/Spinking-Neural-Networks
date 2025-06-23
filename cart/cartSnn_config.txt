@@ -27,13 +27,13 @@ conn_delete_prob = 0.1
 enabled_default         = True
 enabled_mutate_rate     = 0.01
 
-feed_forward = True 
+feed_forward = False
 initial_connection = full_direct
 
 node_add_prob           = 0.03
 node_delete_prob        = 0.03
 
-num_hidden              = 0
+num_hidden              = 5
 num_inputs              = 4
 num_outputs             = 1
 

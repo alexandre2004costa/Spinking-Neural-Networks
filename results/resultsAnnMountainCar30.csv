@@ -1,0 +1,9 @@
+stat,min,max,mean
+learning_time,0.93,5.60,3.06
+success,1,1,1.00
+mean_decision_time,4.19e-06,7.36e-06,5.71e-06
+best_fitness,-110.00,-91.80,-105.27
+mean_fitness,-150.75,-108.60,-129.11
+hidden_nodes,0.00,0.00,0.00
+total_generations,2,23,11.57
+final_reward,-170.00,-83.00,-125.43

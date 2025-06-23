@@ -147,36 +147,49 @@ def run_experiment(config_file, num_Generations=50):
     steps = 0
     done = False
 
-    while not done and steps < 1000:
-        normalized_state = (state - env.observation_space.low) / (
-            env.observation_space.high - env.observation_space.low
-        )
-        t0 = time.time()
-        output = net.activate(normalized_state)
-        action = np.argmax(output)
-        t1 = time.time()
-        action_times.append(t1 - t0)
-        state, reward, terminated, truncated, _ = env.step(action)
-        total_reward += reward
-        steps += 1
-        done = terminated or truncated
-
-    env.close()
-
-    num_hidden = config.genome_config.num_hidden if hasattr(config.genome_config, "num_hidden") else None
-    best_fitness = max(stats_collector.fitness_history) if stats_collector.fitness_history else 0
-    mean_fitness = np.mean(stats_collector.fitness_history) if stats_collector.fitness_history else 0
     success = 1 if stats_collector.success_generation else 0
-    mean_decision_time = np.mean(action_times) if action_times else 0
+    if success:
+        while not done and steps < 1000:
+            normalized_state = (state - env.observation_space.low) / (
+                env.observation_space.high - env.observation_space.low
+            )
+            t0 = time.time()
+            output = net.activate(normalized_state)
+            action = np.argmax(output)
+            t1 = time.time()
+            action_times.append(t1 - t0)
+            state, reward, terminated, truncated, _ = env.step(action)
+            total_reward += reward
+            steps += 1
+            done = terminated or truncated
 
+        env.close()
+
+        num_hidden = config.genome_config.num_hidden if hasattr(config.genome_config, "num_hidden") else None
+        best_fitness = max(stats_collector.fitness_history) if stats_collector.fitness_history else 0
+        mean_fitness = np.mean(stats_collector.fitness_history) if stats_collector.fitness_history else 0
+        success = 1 if stats_collector.success_generation else 0
+        mean_decision_time = np.mean(action_times) if action_times else 0
+
+        return {
+            "learning_time": elapsed_time,
+            "success": success,
+            "mean_decision_time": mean_decision_time,
+            "best_fitness": best_fitness,
+            "mean_fitness": mean_fitness,
+            "hidden_nodes": num_hidden,
+            "total_generations": generation+1,
+            "final_reward": total_reward
+        }
+    
     return {
-        "learning_time": elapsed_time,
-        "success": success,
-        "mean_decision_time": mean_decision_time,
-        "best_fitness": best_fitness,
-        "mean_fitness": mean_fitness,
-        "total_generations": generation+1,
-        "hidden_nodes": num_hidden,
+        "learning_time": None,
+        "success": 0,
+        "mean_decision_time": None,
+        "best_fitness": None,
+        "mean_fitness": None,
+        "hidden_nodes": None,
+        "total_generations": None,
         "final_reward": total_reward
     }
 if __name__ == '__main__':

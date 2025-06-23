@@ -6,8 +6,10 @@ import time
 from stats import RLStatsCollector
 from cartPole import *
 from cartCont.customIzGenome import CustomIZGenome
-from rate_iznn import RateIZNN
+from rate_iznn_cont import RateIZNN
 
+min_vals = np.array([-2.4, -0.21])
+max_vals = np.array([2.4, 0.21])
 
 def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     norm_state = (state - min_vals) / (max_vals - min_vals)
@@ -26,10 +28,11 @@ def simulate(genome, config):
     steps_balanced = 0
 
     while True:
-        input_values = encode_input([state[0], state[2]], min_vals, max_vals, 0, 1)
+        reduced_state = np.array([state[0], state[2]])
+        input_values = encode_input(reduced_state, min_vals, max_vals, 0, 1)
         net.set_inputs(input_values)
 
-        output = net.advance(0.01)     
+        output = net.advance(0.02)     
         #print(output)
 
         action = compute_force(output, genome.sigma)

@@ -4,7 +4,7 @@ import pygame
 import multiprocessing
 import time
 from stats import RLStatsCollector
-from cart.cartPole import *
+from cartPole import *
 
 def decode_output(output):
      # Supondo que output[0] ∈ [-1, 1] (tanh)

@@ -4,7 +4,7 @@ import neat
 import time
 import multiprocessing
 
-def simulate(genome, config, num_trials=7):
+def simulate(genome, config, num_trials=5):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     trials_reward = []
     

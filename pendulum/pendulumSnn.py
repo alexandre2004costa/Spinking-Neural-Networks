@@ -18,7 +18,7 @@ def compute_force(weighted_sum, sigma=1.0):
     try:
         Fn = 1.0 / (1.0 + np.exp(-sigma * (weighted_sum)))
         Ft = 2 * (2 * Fn - 1)
-        #print(f"WS : {weighted_sum} Fn: {Fn}, Ft: {Ft}")
+        print(f"WS : {weighted_sum} Fn: {Fn}, Ft: {Ft}")
         return Ft
     except OverflowError:
         return 2.0

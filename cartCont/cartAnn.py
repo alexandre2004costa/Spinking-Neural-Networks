@@ -32,6 +32,7 @@ def eval_genome(genome, config):
             
     return fitness
 
+
 def visualize_genome(winner, config, generation):
     state = np.array([0, 0, 0.05, 0])
     net = neat.nn.FeedForwardNetwork.create(winner, config)
@@ -126,8 +127,9 @@ def run_experiment(config_file, num_Generations=50):
     net = neat.nn.FeedForwardNetwork.create(winner, config)
     for _ in range(1000):
         t0 = time.time()
-        res = net.activate(state)
-        action = 1 if res[0] > 0.5 else 0
+        input_values = np.array([state[0], state[2]]) # Taking out velocitys
+        output = net.activate(input_values)
+        action = decode_output(output)
         t1 = time.time()
         stats_collector.record_action_time(t1 - t0)
         state = simulate_cartpole_cont(action, state)
@@ -155,4 +157,4 @@ def run_experiment(config_file, num_Generations=50):
 
 if __name__ == '__main__':
     print("running Ann experiment")
-    run('cartCont/cartAnn_config.txt', 350)
+    run('cartCont/cartAnn_config.txt', 200)

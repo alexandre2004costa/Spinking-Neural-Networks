@@ -32,12 +32,12 @@ def simulate(genome, config):
         input_values = encode_input(reduced_state, min_vals, max_vals, 0, 1)
         net.set_inputs(input_values)
 
-        output = net.advance(0.02)     
+        output = net.advance(0.01)     
         #print(output)
 
         action = compute_force(output, genome.sigma)
         #print(action)
-        state = simulate_cartpole(action, state)
+        state = simulate_cartpole_cont(action, state)
         x, _, theta, _ = state
         
         if abs(x) > position_limit or abs(theta) > angle_limit:
@@ -73,8 +73,8 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
         net.set_inputs(input_values)
 
 
-        output = net.advance(0.02)     
-        state = simulate_cartpole(output[0], state)
+        output = net.advance(0.01)     
+        state = simulate_cartpole_cont(output[0], state)
         x, _, theta, _ = state
         
         if abs(x) > position_limit or abs(theta) > angle_limit:
@@ -130,5 +130,5 @@ def run(config_file, num_Generations=50):
 
 
 if __name__ == "__main__":
-    run("cartCont/cartSnn_config.txt", 150)
+    run("cartCont/cartSnn_config.txt", 350)
     

@@ -6,7 +6,7 @@ import multiprocessing
 from stats import RLStatsCollector
 
     
-def simulate(genome, config, num_trials=5):
+def simulate(genome, config, num_trials=10):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     trials_reward = []
 

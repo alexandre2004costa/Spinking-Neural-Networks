@@ -18,13 +18,12 @@ def compute_force(weighted_sum, sigma=1.0):
     try:
         Fn = 1.0 / (1.0 + np.exp(-sigma * (weighted_sum)))
         Ft = 2 * (2 * Fn - 1)
-        print(f"WS : {weighted_sum} Fn: {Fn}, Ft: {Ft}")
         return Ft
     except OverflowError:
         return 2.0
 
 
-def simulate(genome, config, num_trials=5):
+def simulate(genome, config, num_trials=10):
     trials_reward = []
     
     for _ in range(num_trials):
@@ -219,5 +218,5 @@ def run_experiment(config_file, num_Generations=50):
     } 
 
 if __name__ == "__main__":
-    print("Running Pendulum SNN experiment...")
-    #run("pendulum/pendulum_config_snn.txt", 100)
+    #print("Running Pendulum SNN experiment...")
+    run("pendulum/pendulum_config_snn.txt", 100)

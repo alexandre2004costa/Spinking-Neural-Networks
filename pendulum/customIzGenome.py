@@ -8,7 +8,7 @@ class CustomIZGenome(neat.iznn.IZGenome):
         self.simulation_steps_init_stdev = 20
         self.simulation_steps_min_value = 1
         self.simulation_steps_max_value = 100  
-        self.simulation_steps_mutate_power = 0
+        self.simulation_steps_mutate_power = 1
         self.simulation_steps_mutate_rate = 0.5
 
         self.input_scaling_init_mean = 100.0

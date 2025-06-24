@@ -20,7 +20,7 @@ def eval_genome(genome, config):
         input_values = np.array([state[0], state[2]]) # Taking out velocitys
         output = net.activate(input_values)
         action = decode_output(output)
-        state = simulate_cartpole(action, state)
+        state = simulate_cartpole_cont(action, state)
         x, _, theta, _ = state
         
         if abs(x) > position_limit or abs(theta) > angle_limit:
@@ -48,7 +48,7 @@ def visualize_genome(winner, config, generation):
         input_values = np.array([state[0], state[2]]) # Taking out velocitys
         output = net.activate(input_values)
         action = decode_output(output)
-        state = simulate_cartpole(action, state)
+        state = simulate_cartpole_cont(action, state)
         x, _, theta, _ = state
         
         if abs(x) > position_limit or abs(theta) > angle_limit:
@@ -130,7 +130,7 @@ def run_experiment(config_file, num_Generations=50):
         action = 1 if res[0] > 0.5 else 0
         t1 = time.time()
         stats_collector.record_action_time(t1 - t0)
-        state = simulate_cartpole(action, state)
+        state = simulate_cartpole_cont(action, state)
         x, _, theta, _ = state
         if abs(x) > position_limit or abs(theta) > angle_limit:
             break
@@ -155,4 +155,4 @@ def run_experiment(config_file, num_Generations=50):
 
 if __name__ == '__main__':
     print("running Ann experiment")
-    run('cartCont/cartAnn_config.txt', 1000)
+    run('cartCont/cartAnn_config.txt', 350)

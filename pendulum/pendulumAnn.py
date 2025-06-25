@@ -5,14 +5,15 @@ import time
 import multiprocessing
 from stats import RLStatsCollector
 
-    
+seed = 42
+
 def simulate(genome, config, num_trials=10):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
     trials_reward = []
 
     for _ in range(num_trials):
         env = gym.make("Pendulum-v1", render_mode=None)
-        state, _ = env.reset()
+        state, _ = env.reset(seed=seed)
         total_reward = 0
         done = False
         steps = 0

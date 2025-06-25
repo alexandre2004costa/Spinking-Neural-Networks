@@ -7,7 +7,7 @@ reset_on_extinction   = False
 [DefaultGenome]
 num_inputs             = 3
 num_outputs            = 1
-num_hidden             = 2
+num_hidden             = 0
 
 initial_connection     = full
 feed_forward           = True

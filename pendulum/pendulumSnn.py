@@ -23,7 +23,7 @@ def compute_force(weighted_sum, sigma=1.0):
         return 2.0
 
 
-def simulate(genome, config, num_trials=10):
+def simulate(genome, config, num_trials=5):
     trials_reward = []
     
     for _ in range(num_trials):

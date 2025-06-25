@@ -1,11 +1,15 @@
 import neat
 import numpy as np
 import time
-from rate_iznn import RateIZNN
 import multiprocessing
-from cartPole import *
-from customIzGenome import CustomIZGenome
 import time
+from stats import RLStatsCollector
+from cartPole import *
+from cartCont.customIzGenome import CustomIZGenome
+from rate_iznn_cont import RateIZNN
+
+min_vals = np.array([-2.4, -0.21])
+max_vals = np.array([2.4, 0.21])
 
 def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     norm_state = (state - min_vals) / (max_vals - min_vals)
@@ -24,7 +28,8 @@ def simulate(genome, config):
     steps_balanced = 0
 
     while True:
-        input_values = encode_input([state[0], state[2]], min_vals, max_vals, 0, 1)
+        reduced_state = np.array([state[0], state[2]])
+        input_values = encode_input(reduced_state, min_vals, max_vals, 0, 1)
         net.set_inputs(input_values)
 
         output = net.advance(0.01)     
@@ -32,7 +37,7 @@ def simulate(genome, config):
 
         action = compute_force(output, genome.sigma)
         #print(action)
-        state = simulate_cartpole(action, state)
+        state = simulate_cartpole_cont(action, state)
         x, _, theta, _ = state
         
         if abs(x) > position_limit or abs(theta) > angle_limit:
@@ -68,8 +73,8 @@ def gui(winner, config, I_min, I_diff, I_background, generation_reached):
         net.set_inputs(input_values)
 
 
-        output = net.advance(0.02)     
-        state = simulate_cartpole(output[0], state)
+        output = net.advance(0.01)     
+        state = simulate_cartpole_cont(output[0], state)
         x, _, theta, _ = state
         
         if abs(x) > position_limit or abs(theta) > angle_limit:
@@ -122,8 +127,81 @@ def run(config_file, num_Generations=50):
     
     #gui(winner, config, config_values["I_min"], config_values["I_diff"], config_values["background"], generation_reached)
     
+def run_experiment(config_file, num_Generations=50):
+    config = neat.Config(CustomIZGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         config_file)
+    fitness_threshold = config.fitness_threshold if hasattr(config, "fitness_threshold") else 5000
+    stats_collector = RLStatsCollector(fitness_threshold=fitness_threshold)
+    stats_collector.start_experiment()
 
+    def create_phenotype(genome):
+        return RateIZNN.create(genome, config)
+    neat.iznn.IZGenome.create_phenotype = create_phenotype
+
+    pop = neat.population.Population(config)
+    generation_reached = 0
+
+    class GenerationReporter(neat.reporting.BaseReporter):
+        def start_generation(self, generation):
+            nonlocal generation_reached
+            generation_reached = generation
+            self.generation_start_time = time.time()
+
+        def post_evaluate(self, config, population, species, best_genome):
+            gen_time = time.time() - self.generation_start_time
+            stats_collector.record_generation(best_genome.fitness, gen_time)
+
+    pop.add_reporter(GenerationReporter())
+    pop.add_reporter(neat.StdOutReporter(False))
+    stats = neat.StatisticsReporter()
+    pop.add_reporter(stats)
+
+    pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_single_genome)
+    winner = pop.run(pe.evaluate, num_Generations)
+    stats_collector.end_experiment()
+
+    state = np.array([0, 0, 0.05, 0])
+    net = RateIZNN.create(winner, config)
+    action_times = []
+    steps_balanced = 0
+    x, _, theta, _ = state
+
+    while abs(x) <= position_limit and abs(theta) <= angle_limit and steps_balanced < 5000:
+        reduced_state = np.array([state[0], state[2]])
+        input_values = encode_input(reduced_state, min_vals, max_vals, 0, 1)
+        net.set_inputs(input_values)
+        t0 = time.time()
+        output = net.advance(0.01)
+        action = compute_force(output, winner.sigma)
+        t1 = time.time()
+        action_times.append(t1 - t0)
+        state = simulate_cartpole_cont(action, state)
+        x, _, theta, _ = state
+        steps_balanced += 1
+
+    best_fitness = max(stats_collector.fitness_history) if stats_collector.fitness_history else 0
+    mean_fitness = np.mean(stats_collector.fitness_history) if stats_collector.fitness_history else 0
+    success_generation = stats_collector.success_generation if stats_collector.success_generation else num_Generations
+    success = 1 if stats_collector.success_generation else 0
+    mean_decision_time = np.mean(action_times) if action_times else 0
+    num_hidden = len(winner.nodes) - len(config.genome_config.output_keys)
+
+    return {
+        "learning_time": stats_collector.learning_time(),
+        "success": success,
+        "success_generation": success_generation,
+        "mean_decision_time": mean_decision_time,
+        "best_fitness": best_fitness,
+        "mean_fitness": mean_fitness,
+        "hidden_nodes": num_hidden,
+        "total_generations": len(stats_collector.fitness_history),
+        "winner_steps": getattr(winner, "simulation_steps", None),
+        "winner_input_scaling": getattr(winner, "input_scaling", None),
+        "winner_input_min": getattr(winner, "input_min", None),
+        "winner_background": getattr(winner, "background", None),
+    }
 
 if __name__ == "__main__":
-    run("cartCont/cartSnn_config.txt", 150)
+    run("cartCont/cartSnn_config.txt", 350)
     

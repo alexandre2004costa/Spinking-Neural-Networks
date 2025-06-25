@@ -39,7 +39,7 @@ node_delete_prob = 0.1
 # Network parameters
 num_inputs   = 8
 num_outputs  = 4
-num_hidden   = 2
+num_hidden   = 4
 
 a_init_mean      = 0.02
 a_init_stdev     = 0.002

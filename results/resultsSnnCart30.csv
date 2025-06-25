@@ -1,0 +1,12 @@
+stat,mean,min,max
+learning_time,6.91,4.78,15.71
+success,1.00,1,1
+mean_decision_time,1.89e-05,1.16e-05,3.51e-05
+best_fitness,100000.00,100000,100000
+mean_fitness,9633.49,3946.80,16932.00
+hidden_nodes,0.30,0.00,2
+total_generations,15.17,6,30
+winner_steps,5.10,4,7
+winner_input_scaling,101.87,94.17,115.81
+winner_input_min,1.56,-11.23,13.09
+winner_background,-0.48,-4.49,3.33

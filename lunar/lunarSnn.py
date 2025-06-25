@@ -4,7 +4,7 @@ import time
 import multiprocessing
 import neat
 import numpy as np
-from customIzGenome import CustomIZGenome
+from lunar.customIzGenome import CustomIZGenome
 import time
 
 def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
@@ -12,7 +12,7 @@ def encode_input(state, min_vals, max_vals, I_min=0, I_max=1):
     I_values = I_min + norm_state * (I_max - I_min)
     return I_values
 
-def simulate(genome, config, num_trials=10):
+def simulate(genome, config, num_trials=5):
     trials_reward = []
     
     for _ in range(num_trials):

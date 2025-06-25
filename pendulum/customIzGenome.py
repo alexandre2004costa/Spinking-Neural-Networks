@@ -4,41 +4,40 @@ import random
 class CustomIZGenome(neat.iznn.IZGenome):
     def __init__(self, key):
         super().__init__(key)
-        self.simulation_steps_init_mean = 30
-        self.simulation_steps_init_stdev = 8
-        self.simulation_steps_min_value = 1
-        self.simulation_steps_max_value = 100
-        self.simulation_steps_mutate_power = 5
-        self.simulation_steps_mutate_rate = 0
+        self.simulation_steps_init_mean = 50
+        self.simulation_steps_init_stdev = 40
+        self.simulation_steps_min_value = 2
+        self.simulation_steps_max_value = 200
+        self.simulation_steps_mutate_power = 10
+        self.simulation_steps_mutate_rate = 0.5
 
-        self.input_scaling_init_mean = 60.0
-        self.input_scaling_init_stdev = 10
-        self.input_scaling_min_value = 1
-        self.input_scaling_max_value = 150.0
-        self.input_scaling_mutate_power = 10
-        self.input_scaling_mutate_rate = 1
+        self.input_scaling_init_mean = 50.0
+        self.input_scaling_init_stdev = 10.0
+        self.input_scaling_min_value = 5.0
+        self.input_scaling_max_value = 125.0
+        self.input_scaling_mutate_power = 5.0
+        self.input_scaling_mutate_rate = 0.5
 
         self.input_min_init_mean = -10.0
-        self.input_min_init_stdev = 10
-        self.input_min_min_value = -30
-        self.input_min_max_value = 0.0
-        self.input_min_mutate_power = 10
-        self.input_min_mutate_rate = 1
+        self.input_min_init_stdev = 20.0
+        self.input_min_min_value = -200.0
+        self.input_min_max_value = 200.0
+        self.input_min_mutate_power = 10.0
+        self.input_min_mutate_rate = 0.5
 
         self.background_init_mean = 0.0
-        self.background_init_stdev = 2.0
+        self.background_init_stdev = 1.0
         self.background_min_value = -10.0
         self.background_max_value = 10.0
-        self.background_mutate_power = 2.0
+        self.background_mutate_power = 1.0
         self.background_mutate_rate = 0.5
 
-        self.sigma_init_mean = 1.0
+        self.sigma_init_mean = 1.05
         self.sigma_init_stdev = 0.1
         self.sigma_min_value = 0.8
         self.sigma_max_value = 1.2
         self.sigma_mutate_power = 0.05
         self.sigma_mutate_rate = 0.1
-        
         self.simulation_steps = int(self.simulation_steps_init_mean)
         self.input_scaling = self.input_scaling_init_mean
         self.input_min = self.input_min_init_mean

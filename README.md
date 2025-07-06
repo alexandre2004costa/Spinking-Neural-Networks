@@ -1,3 +1,5 @@
+![Environments running w train](https://github.com/alexandre2004costa/Spinking-Neural-Networks/blob/master/SNN.gif)
+
 # 🧠 Spiking Neural Networks (SNN)
 
 This project explores the application of **Spiking Neural Networks (SNNs)** in classic control environments such as CartPole, MountainCar, Pendulum, and others. It uses a firing-rate-based model (`Rate Izhikevich`) combined with the **NEAT** algorithm to evolve network topology.
